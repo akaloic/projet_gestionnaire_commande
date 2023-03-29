@@ -32,7 +32,8 @@ void mkdir(noeud *courant, char* nom){
 
     if (courant->fils == NULL) memmove(courant->fils, n, sizeof(liste_noeud));
     else{
-        liste_noeud *l = courant->fils;
+        liste_noeud *l = malloc(sizeof(liste_noeud));
+        memcpy(l, courant->fils, sizeof(liste_noeud));
         while (l->suiv != NULL) l = l->suiv;
         l->suiv = malloc(sizeof(liste_noeud));
         memmove(l->suiv->noeud, n, sizeof(noeud));
