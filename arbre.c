@@ -62,8 +62,7 @@ void mkdir(noeud *courant, char* nom){
         courant->fils = l;
         l->noeud = n;
         l->suiv = NULL;
-    }
-    else{
+    }else{
         liste_noeud *tmp = courant->fils;
         while (tmp->suiv != NULL) tmp = tmp->suiv;
         tmp->suiv = l;
@@ -78,23 +77,29 @@ void ls(noeud *courant){
         printf("'%s' n'est pas un dossier.\n", courant->nom);
         return;
     }
+
     liste_noeud *l = courant->fils;
+
     while(l != NULL){
         printf("%s\n", l->noeud->nom);
         l = l->suiv;
     }
+
     free(l);
 }
 
 noeud* cd(noeud *courant, char *chemin) {
     if (!courant->est_dossier || courant->fils == NULL) return NULL;
+
     if (chemin[0] == '/'){
         courant = courant->racine;
         if (strlen(chemin) < 2) return courant;     // "cd /"
         chemin++;
     }
+
     char* next = strchr(chemin, '/');
     liste_noeud* liste = courant->fils;
+
     if (next == NULL){
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0) return liste->noeud;    // "cd exemple"
@@ -102,15 +107,18 @@ noeud* cd(noeud *courant, char *chemin) {
         }
         return NULL;
     }
+
     int len = strlen(chemin) - strlen(next); 
     char* premier_mot = malloc(sizeof(char)*len);
     assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
+
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0)
             return cd(liste->noeud, next);
         liste = liste->suiv;
     }
+
     return NULL;
 }
 
