@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 struct noeud;
 struct liste_noeud;
@@ -22,49 +23,56 @@ struct liste_noeud{
 typedef struct noeud noeud;
 typedef struct liste_noeud liste_noeud;
 
-void mkdir(noeud *courant, char* nom){
-    noeud *n = malloc(sizeof(noeud));
-    n->est_dossier = true,
-    memcpy(n, nom, sizeof(char) * strlen(nom));
-    memmove(n->pere, courant, sizeof(noeud));
-    memmove(n->racine, courant->racine, sizeof(noeud));
-    memmove(n->fils, NULL, sizeof(liste_noeud));
-
-    if (courant->fils == NULL) memmove(courant->fils, n, sizeof(liste_noeud));
-    else{
-        liste_noeud *l = malloc(sizeof(liste_noeud));
-        memcpy(l, courant->fils, sizeof(liste_noeud));
-        while (l->suiv != NULL) l = l->suiv;
-        l->suiv = malloc(sizeof(liste_noeud));
-        memmove(l->suiv->noeud, n, sizeof(noeud));
-        memmove(l->suiv->suiv, NULL, sizeof(liste_noeud));
+void verifNoeud(noeud *n){
+    if (n == NULL){
+        printf("allocation null");
+        assert(n != NULL);
     }
+}
 
-    free(n);
+void verifListe(liste_noeud *n){
+    if (n == NULL){
+        printf("allocation null");
+        assert(n != NULL);
+    }
+}
+
+void mkdir(noeud *courant, char* nom){
+    if (courant->est_dossier == false) return;
+    noeud *n = malloc(sizeof(noeud));
+    verifNoeud(n);
+    n->est_dossier = true;
+    memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+    n->pere = courant;
+    n->racine = courant->racine;
+    n->fils = NULL;
+
+    liste_noeud *l = malloc(sizeof(liste_noeud));
+    verifListe(l);
+    l->noeud = n;
+    l->suiv = courant->fils;
+    courant->fils = l;
 }
 
 void ls(noeud *courant){
-    if (courant->fils == NULL) return;
-    liste_noeud *l = courant->fils;
-    while (l != NULL){
-        printf("%s ", l->noeud->nom);
-        l = l->suiv;
-    }
 }
 
 int main(){
     noeud *racine = malloc(sizeof(noeud));
+    verifNoeud(racine);
     racine->est_dossier = true;
-    memcpy(racine->nom, "/", sizeof(char) * strlen("/"));
-    memmove(racine->pere, NULL, sizeof(noeud));
-    memmove(racine->racine, racine, sizeof(noeud));
-    memmove(racine->fils, NULL, sizeof(liste_noeud));
+    memcpy(racine->nom, "/", sizeof(char) * 1);
+    racine->pere = NULL;
+    racine->racine = racine;
+    racine->fils = NULL;
 
-    mkdir(racine, "home");
-    mkdir(racine, "usr");
-    mkdir(racine, "bin");
+    mkdir(racine, "dossier1");
+    mkdir(racine, "dossier2");
+    mkdir(racine, "dossier3");
 
-    //ls(racine);
+    ls(racine);
 
-    return EXIT_SUCCESS;
+    free(racine);
+
+    return EXIT_SUCCESS;    
 }
