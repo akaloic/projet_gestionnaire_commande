@@ -91,10 +91,24 @@ void ls(noeud *courant){
 noeud* cd(noeud *courant, char *chemin) {
     if (!courant->est_dossier || courant->fils == NULL) return NULL;
 
-    if (chemin[0] == '/'){
-        courant = courant->racine;
-        if (strlen(chemin) < 2) return courant;     // "cd /"
-        chemin++;
+    if (chemin[0] == '/' || chemin[0] == '.'){
+        int point = 0;
+        for (int i = 0; chemin[i] != '\0' && i < 2; i++){
+            if (chemin[i] == '/') break;
+            if (chemin[i] == '.') point++;
+        }
+        switch (point){
+            case 0 : courant = courant->racine;
+            case 1 : if (chemin[0] == '/') courant = courant->racine;
+            case 2 : 
+                if (strlen(chemin) > 2){
+                    if (chemin[2] == '/') return cd(courant->pere, chemin+3);
+                    else return NULL;
+                }
+                else return courant->pere;
+            break;
+        }
+        return;
     }
 
     char* next = strchr(chemin, '/');
