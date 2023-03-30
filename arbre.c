@@ -26,20 +26,6 @@ struct liste_noeud{
 typedef struct noeud noeud;
 typedef struct liste_noeud liste_noeud;
 
-void verifNoeud(noeud *n){
-    if (n == NULL){
-        puts("allocation null");
-        assert(n != NULL);
-    }
-}
-
-void verifListe(liste_noeud *n){
-    if (n == NULL){
-        puts("allocation null");
-        assert(n != NULL);
-    }
-}
-
 void estAlpha(char *nom){
     for (int i = 0; i < strlen(nom); i++){
         if (isalnum(nom[i]) == 0){
@@ -49,10 +35,20 @@ void estAlpha(char *nom){
     }
 }
 
+noeud* creerDossier(){
+    noeud *n = malloc(sizeof(noeud));
+    assert(n != NULL);
+    n->est_dossier = true;
+    n->pere = NULL;
+    n->racine = n;
+    n->fils = NULL;
+    return n;
+}
+
 void mkdir(noeud *courant, char* nom){
     if (courant->est_dossier == false) return;
     noeud *n = malloc(sizeof(noeud));
-    verifNoeud(n);
+    assert(n != NULL);
     n->est_dossier = true;
     memcpy(n->nom, nom, sizeof(char) * strlen(nom));
     n->pere = courant;
@@ -60,10 +56,21 @@ void mkdir(noeud *courant, char* nom){
     n->fils = NULL;
 
     liste_noeud *l = malloc(sizeof(liste_noeud));
-    verifListe(l);
-    l->noeud = n;
-    l->suiv = courant->fils;
-    courant->fils = l;
+    assert(l != NULL);
+
+    if (courant->fils == NULL){
+        courant->fils = l;
+        l->noeud = n;
+        l->suiv = NULL;
+    }
+    else{
+        liste_noeud *tmp = courant->fils;
+        while (tmp->suiv != NULL) tmp = tmp->suiv;
+        tmp->suiv = l;
+        l->noeud = n;
+        l->suiv = NULL;
+    }
+    
 }
 
 void ls(noeud *courant){
@@ -97,6 +104,7 @@ noeud* cd(noeud *courant, char *chemin) {
     }
     int len = strlen(chemin) - strlen(next); 
     char* premier_mot = malloc(sizeof(char)*len);
+    assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0)
@@ -106,12 +114,34 @@ noeud* cd(noeud *courant, char *chemin) {
     return NULL;
 }
 
+void touch(noeud* courant, char* nom){
+    if (!courant->est_dossier) return;
 
+    noeud* ficher = malloc(sizeof(noeud));
+    assert(ficher != NULL);
+    ficher->est_dossier = false;
+    memcpy(ficher->nom, nom, sizeof(char) * strlen(nom));
+    ficher->pere = courant;
+    ficher->racine = courant->racine;
+    ficher->fils = NULL;
+
+    liste_noeud* l = malloc(sizeof(liste_noeud));
+    assert(l != NULL);
+    l->noeud = ficher;
+    l->suiv = NULL;
+
+    if (courant->fils == NULL) courant->fils = l;
+    else{
+        liste_noeud* tmp = courant->fils;
+        while (tmp->suiv != NULL) tmp = tmp->suiv;
+        tmp->suiv = l;
+    }
+}
 
 //int main(int nbr, char *args) //fichier texte + scanf("..")
 int main(){
     noeud *racine = malloc(sizeof(noeud));
-    verifNoeud(racine);
+    assert(racine != NULL);
     racine->est_dossier = true;
     memcpy(racine->nom, "", sizeof(char) * strlen(""));
     racine->pere = NULL;
@@ -134,6 +164,7 @@ int main(){
     racine = cd(racine, cours);
     mkdir(racine, projetC);
     mkdir(racine, anglais);
+    touch(racine, "test.txt");
     ls(racine);
 
     return EXIT_SUCCESS;    
