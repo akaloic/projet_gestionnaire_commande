@@ -1,0 +1,30 @@
+if (strlen(chemin) == 0) return;
+    if (chemin[0] == '/'){
+        courant = courant->racine;
+        chemin++;
+    }
+    char* c = strchr(chemin, '/');
+    liste_noeud *courant_fils = courant->fils;
+    if (courant_fils == NULL){
+        printf("'%s' n'appartient pas au dosier", chemin);
+        return;
+    }
+    if (c == NULL){
+        while(courant_fils != NULL){
+            if (strcmp(courant->nom, chemin) == 0) {
+                courant = courant_fils;
+                return;
+            }
+            courant_fils = courant_fils->suiv;
+        }
+        printf("'%s' n'appartient pas au dosier", chemin);
+        return;
+    }
+    while(courant_fils != NULL){
+        if (strcmp(courant->nom, chemin) == 0) {
+            cd()
+        }
+        courant_fils = courant_fils->suiv;
+    }
+    printf("'%s' n'appartient pas au dosier", chemin);
+    return; 
