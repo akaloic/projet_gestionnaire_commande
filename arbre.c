@@ -98,17 +98,16 @@ noeud* cd(noeud *courant, char *chemin) {
             if (chemin[i] == '.') point++;
         }
         switch (point){
-            case 0 : courant = courant->racine;
-            case 1 : if (chemin[0] == '/') courant = courant->racine;
+            case 0 : courant = courant->racine; break;
+            case 1 : if (chemin[0] == '/') courant = courant->racine; break;
             case 2 : 
                 if (strlen(chemin) > 2){
                     if (chemin[2] == '/') return cd(courant->pere, chemin+3);
                     else return NULL;
                 }
                 else return courant->pere;
-            break;
+            default: return NULL;   // ce cas n'arrive jamais
         }
-        return;
     }
 
     char* next = strchr(chemin, '/');
@@ -162,6 +161,14 @@ void touch(noeud* courant, char* nom){
 
 //int main(int nbr, char *args) //fichier texte + scanf("..")
 int main(){
+    /*
+    FILE *flux = fopen(args[1], "r"); // ouvre le fichier donné en parametre et le lit
+    if (flux == NULL){
+        perror("Probleme ouverture fichier");
+    }else{
+        
+    }*/
+
     noeud *racine = malloc(sizeof(noeud));
     assert(racine != NULL);
     racine->est_dossier = true;
