@@ -179,10 +179,13 @@ char *concat(char *s1, char *s2) {
 
 void printRacine(noeud* courant, char* tab){   // on commence avec la racine
     if (courant == NULL) return;
-    printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
+    int n = nbFils(courant->fils);
+    if (n == 0) printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", n);
+    else printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
     liste_noeud* l = courant->fils;
     while (l != NULL){
-        printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+        if (l->suiv == NULL) printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+        else printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
         l = l->suiv;
     }
     printf("\n");
