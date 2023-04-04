@@ -159,6 +159,44 @@ void touch(noeud* courant, char* nom){
     }
 }
 
+int nbFils(liste_noeud* liste){
+    if (liste == NULL) return 0;
+    liste_noeud* l = liste;
+    int n = 0;
+    while (l != NULL){
+        n++;
+        l = l->suiv;
+    } 
+    return n;
+}
+
+char *concat(char *s1, char *s2) {
+    char *result = (char *)malloc(strlen(s1) + strlen(s2) + 1);
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
+void printRacine(noeud* courant, char* tab){   // on commence avec la racine
+    if (courant == NULL) return;
+    printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
+    liste_noeud* l = courant->fils;
+    while (l != NULL){
+        printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+        l = l->suiv;
+    }
+    printf("\n");
+    l = courant->fils;
+    while (l != NULL){
+        printRacine(l->noeud, concat(tab, "|    "));
+        l = l->suiv;
+    }
+}
+
+void print(noeud* courant){
+    printRacine(courant->racine, "");
+}
+
 void pwd(noeud* courant){
     noeud* d = courant;
     assert(d != NULL);
@@ -217,12 +255,14 @@ int main(){
     mkdir(racine, projetC);
     mkdir(racine, anglais);
     touch(racine, "test.txt");
-    ls(racine);
-    pwd(racine);
+    //ls(racine);
+    //pwd(racine);
 
     mkdir(racine, td1);
     racine = cd(racine, td1);
-    pwd(racine);
+    //pwd(racine);
+
+    print(racine);
 
     return EXIT_SUCCESS;    
 }
