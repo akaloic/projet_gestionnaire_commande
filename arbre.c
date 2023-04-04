@@ -176,8 +176,9 @@ void pwd(noeud* courant){
     }
     printf("/");
     for (int i = n-1; i >= 0; i--){
-        printf("%s", pwd[i]);
+        printf("%s/", pwd[i]);
     }
+    printf("\n");
     free(pwd);
 }
 
@@ -217,6 +218,10 @@ int main(){
     mkdir(racine, anglais);
     touch(racine, "test.txt");
     ls(racine);
+    pwd(racine);
+
+    mkdir(racine, td1);
+    racine = cd(racine, td1);
     pwd(racine);
 
     return EXIT_SUCCESS;    
