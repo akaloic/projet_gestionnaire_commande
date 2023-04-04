@@ -91,23 +91,11 @@ void ls(noeud *courant){
 noeud* cd(noeud *courant, char *chemin) {
     if (!courant->est_dossier || courant->fils == NULL) return NULL;
 
-    if (chemin[0] == '/' || chemin[0] == '.'){
-        int point = 0;
-        for (int i = 0; chemin[i] != '\0' && i < 2; i++){
-            if (chemin[i] == '/') break;
-            if (chemin[i] == '.') point++;
-        }
-        switch (point){
-            case 0 : courant = courant->racine; break;
-            case 1 : if (chemin[0] == '/') courant = courant->racine; break;
-            case 2 : 
-                if (strlen(chemin) > 2){
-                    if (chemin[2] == '/') return cd(courant->pere, chemin+3);
-                    else return NULL;
-                }
-                else return courant->pere;
-            default: return NULL;   // ce cas n'arrive jamais
-        }
+    if (chemin[0] == '/') return cd(courant->racine, chemin+1);
+    if (chemin[0] == '.'){
+        if (chemin[1] == '.') return cd(courant->pere, chemin+2);
+        if (chemin[1] == '/') return cd(courant, chemin+2);
+        else return cd(courant, chemin+1);
     }
 
     char* next = strchr(chemin, '/');
@@ -115,10 +103,16 @@ noeud* cd(noeud *courant, char *chemin) {
 
     if (next == NULL){
         while (liste != NULL){
-            if (strcmp(liste->noeud->nom, chemin) == 0) return liste->noeud;    // "cd exemple"
+            if (strcmp(liste->noeud->nom, chemin) == 0){
+                if (liste->noeud->est_dossier) return liste->noeud;
+                else {
+                    printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
+                    return courant;
+                }
+            }
             liste = liste->suiv;
         }
-        return NULL;
+        return courant;
     }
 
     int len = strlen(chemin) - strlen(next); 
@@ -237,33 +231,25 @@ int main(){
     assert(racine != NULL);
     racine->est_dossier = true;
     memcpy(racine->nom, "", sizeof(char) * strlen(""));
-    racine->pere = NULL;
+    racine->pere = racine;
     racine->racine = racine;
     racine->fils = NULL;
 
-    char *cours = "Cours";
-    char *td = "Td";
-    char *edt = "Edt";
-    char *projetC = "ProjetC";
-    char *anglais = "Anglais";
-    char *td1 = "TD1";
-    char *td2 = "TD2";
+    // CELA CREER ARBRE DE FIGURE 1
+    mkdir(racine, "Cours");
+    mkdir(racine, "Td");
+    mkdir(racine, "Edt");
 
-    mkdir(racine, cours);
-    mkdir(racine, td);
-    mkdir(racine, edt);
-    //ls(racine);
+    racine = cd(racine, "Cours");
+    mkdir(racine, "ProjetC");
+    mkdir(racine, "Anglais");
 
-    racine = cd(racine, cours);
-    mkdir(racine, projetC);
-    mkdir(racine, anglais);
-    touch(racine, "test.txt");
-    //ls(racine);
-    //pwd(racine);
+    racine = cd(racine, "../Td");
+    touch(racine, "Td1");
+    touch(racine, "Td2");
 
-    mkdir(racine, td1);
-    racine = cd(racine, td1);
-    //pwd(racine);
+    racine = cd(racine, "/.");
+    // CELA CREER ARBRE DE FIGURE 1
 
     print(racine);
 
