@@ -159,6 +159,28 @@ void touch(noeud* courant, char* nom){
     }
 }
 
+void pwd(noeud* courant){
+    noeud* d = courant;
+    assert(d != NULL);
+    int n = 0;
+    while(d != courant->racine){
+        n++;
+        d = d->pere;
+    }
+    d = courant;
+    char** pwd = (char**) malloc(sizeof(char*)*n);
+    assert(pwd != NULL);
+    for (int i = 0; i < n; i++){
+        pwd[i] = d->nom;
+        d = d->pere;
+    }
+    printf("/");
+    for (int i = n-1; i >= 0; i--){
+        printf("%s", pwd[i]);
+    }
+    free(pwd);
+}
+
 //int main(int nbr, char *args) //fichier texte + scanf("..")
 int main(){
     /*
@@ -195,6 +217,7 @@ int main(){
     mkdir(racine, anglais);
     touch(racine, "test.txt");
     ls(racine);
+    pwd(racine);
 
     return EXIT_SUCCESS;    
 }
