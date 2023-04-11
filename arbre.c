@@ -88,49 +88,6 @@ void ls(noeud *courant){
     free(l);
 }
 
-void* cd(noeud* courant, char* chemin){
-    if (!courant->est_dossier || courant->fils == NULL) return NULL;
-
-    if (chemin[0] == '\0') return courant->racine;
-    if (chemin[0] == '/') return cd(courant->racine, chemin+1);
-    if (chemin[0] == '.'){
-        if (chemin[1] == '.') return cd(courant->pere, chemin+2);
-        if (chemin[1] == '/') return cd(courant, chemin+2);
-        else return cd(courant, chemin+1);
-    }
-
-    char* next = strchr(chemin, '/');
-    next = (next == NULL) ? NULL : next+1;
-    liste_noeud* liste = courant->fils;
-
-    if (next == NULL){
-        while (liste != NULL){
-            if (strcmp(liste->noeud->nom, chemin) == 0){
-                if (liste->noeud->est_dossier) return liste->noeud;
-                else {
-                    printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
-                    return courant;
-                }
-            }
-            liste = liste->suiv;
-        }
-        return NULL;
-    }
-
-    int len = strlen(chemin) - (strlen(next)+1); 
-    char* premier_mot = malloc(sizeof(char)*len);
-    assert(premier_mot != NULL);
-    memmove(premier_mot, chemin, sizeof(char)*len);
-
-    while(liste != NULL){
-        if (strcmp(liste->noeud->nom, premier_mot) == 0)
-            return cd(liste->noeud, next);
-        liste = liste->suiv;
-    }
-
-    return NULL;
-}
-
 void touch(noeud* courant, char* nom){
     if (!courant->est_dossier) return;
 
@@ -202,8 +159,8 @@ void print(noeud* courant){
 }
 
 void pwd(noeud* courant){
+    assert(courant != NULL);
     noeud* d = courant;
-    assert(d != NULL);
     int n = 0;
     while(d != courant->racine){
         n++;
@@ -225,20 +182,73 @@ void pwd(noeud* courant){
 }
 
 void freeFils(noeud* courant){
-    if (courant->fils == NULL) free(courant);
-
-    while (courant->fils != NULL){
-        freeFils(courant->fils->noeud);
-        courant->fils = courant->fils->suiv;
+    if (courant->fils == NULL) return;
+    liste_noeud* l = courant->fils;
+    while (l != NULL){
+        freeFils(l->noeud);
+        l = l->suiv;
     }
+    free(l);
+    free(courant->fils);
+}
+
+void* cd(noeud* courant, char* chemin){
+    assert(courant->est_dossier);
+
+    if (chemin[0] == '\0') return courant->racine;
+    if (chemin[0] == '/') return cd(courant->racine, chemin+1);
+    if (chemin[0] == '.'){
+        if (chemin[1] == '.'){
+            if (chemin[2] == '\0') return courant->pere;
+            if (chemin[2] == '/') return cd(courant->pere, chemin+3);
+        }
+        if (chemin[1] == '/') 
+            return cd(courant, chemin+2);
+    }
+
+    char* next = strchr(chemin, '/');
+    next = (next == NULL) ? NULL : next+1;
+    liste_noeud* liste = courant->fils;
+
+    //printf("next: %s\n", next);
+
+    if (next == NULL){
+        while (liste != NULL){
+            if (strcmp(liste->noeud->nom, chemin) == 0){
+                if (liste->noeud->est_dossier) return liste->noeud;
+                else {
+                    printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
+                    return courant;
+                }
+            }
+            liste = liste->suiv;
+        }
+        return courant;
+    }
+
+    int len = strlen(chemin) - (strlen(next)+1); 
+    char* premier_mot = malloc(sizeof(char)*len);
+    assert(premier_mot != NULL);
+    memmove(premier_mot, chemin, sizeof(char)*len);
+
+    while(liste != NULL){
+        if (strcmp(liste->noeud->nom, premier_mot) == 0)
+            return cd(liste->noeud, next);
+        liste = liste->suiv;
+    }
+
+    return NULL;
 }
 
 void rm(noeud* courant, char* chemin){
-    if (!courant->est_dossier) return;
-
+    if (chemin[0] == '\0'){
+        printf("Erreur, il faut passer un chemin non vide en parametre.");
+        return;
+    }
+    if (chemin[0] == '/') {rm(courant->racine, chemin+1); return;}
     if (chemin[0] == '.'){
-        if (chemin[1] == '.') return rm(courant->pere, chemin+2);
-        if (chemin[1] == '/') return rm(courant, chemin+2);
+        if (chemin[1] == '.' && chemin[2] == '/') {rm(courant->pere, chemin+3); return;}
+        if (chemin[1] == '/') {rm(courant, chemin+2); return;}
     }
 
     char* next = strchr(chemin, '/');
@@ -249,7 +259,8 @@ void rm(noeud* courant, char* chemin){
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
                 if (liste->noeud->est_dossier) freeFils(liste->noeud);
-                else free(liste->noeud);          
+                free(liste->noeud); 
+                       
                 liste_noeud* tmp = courant->fils;
                 if (tmp == liste){
                     courant->fils = liste->suiv;
@@ -316,9 +327,10 @@ int main(){
     courant = cd(courant, ""); // ou  'cd(courant, "/");'
     // CELA CREER ARBRE DE FIGURE 1
 
-    courant = cd(courant, "Cours/ProjetC");
+    courant = cd(courant, "Cours/ProjetC/../Anglais");
     pwd(courant);
 
+    rm(courant, "../ProjetC");
     rm(courant, "../Anglais");
 
     print(courant);
