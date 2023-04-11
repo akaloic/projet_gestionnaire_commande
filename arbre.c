@@ -343,7 +343,7 @@ int main(){
 
     //rm(courant, "Td1"); // Td1 erreur
     rm(courant, "../ProjetC"); // ProjetC OK
-    rm(courant, "../../Cours"); // Cours NON car parent de courant
+    //rm(courant, "../../Cours"); // Cours NON car parent de courant
 
     print(courant);
 
