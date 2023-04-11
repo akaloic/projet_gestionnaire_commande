@@ -240,15 +240,15 @@ void* cd(noeud* courant, char* chemin){
     return NULL;
 }
 
-void rm(noeud* courant, char* chemin){
+void rmBis(noeud* courant, char* chemin, noeud* origin){
     if (chemin[0] == '\0'){
-        printf("Erreur, il faut passer un chemin non vide en parametre.");
+        printf("Erreur, il faut passer un chemin non vide en parametre.\n");
         return;
     }
-    if (chemin[0] == '/') {rm(courant->racine, chemin+1); return;}
+    if (chemin[0] == '/') {rmBis(courant->racine, chemin+1, origin); return;}
     if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {rm(courant->pere, chemin+3); return;}
-        if (chemin[1] == '/') {rm(courant, chemin+2); return;}
+        if (chemin[1] == '.' && chemin[2] == '/') {rmBis(courant->pere, chemin+3, origin); return;}
+        if (chemin[1] == '/') {rmBis(courant, chemin+2, origin); return;}
     }
 
     char* next = strchr(chemin, '/');
@@ -258,6 +258,13 @@ void rm(noeud* courant, char* chemin){
     if (next == NULL){  // il y a plus d'occurence de '/' dans chemin
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
+                while(origin != courant->racine){
+                    if (strcmp(origin->nom, liste->noeud->nom) == 0){
+                        printf("Le dossier '%s' ne peut pas être supprimé car elle est un parent de '%s'\n", liste->noeud->nom, origin->nom);
+                        return;
+                    }
+                    origin = origin->pere;
+                }
                 if (liste->noeud->est_dossier) freeFils(liste->noeud);
                 else free(liste->noeud); 
                        
@@ -283,7 +290,7 @@ void rm(noeud* courant, char* chemin){
 
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            rm(liste->noeud, next);
+            rmBis(liste->noeud, next, origin);
             return;
         }
         liste = liste->suiv;
@@ -291,6 +298,10 @@ void rm(noeud* courant, char* chemin){
 
     printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", premier_mot);
     return;
+}
+
+void rm(noeud* courant, char* chemin){
+    rmBis(courant, chemin, courant);
 }
 
 //int main(int nbr, char *args) //fichier texte + scanf("..")
@@ -330,8 +341,9 @@ int main(){
     courant = cd(courant, "Cours/ProjetC/../Anglais");
     pwd(courant);
 
-    rm(courant, "../ProjetC");
-    rm(courant, "../Anglais");
+    //rm(courant, "Td1"); // Td1 erreur
+    rm(courant, "../ProjetC"); // ProjetC OK
+    rm(courant, "../../Cours"); // Cours NON car parent de courant
 
     print(courant);
 
