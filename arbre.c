@@ -88,9 +88,10 @@ void ls(noeud *courant){
     free(l);
 }
 
-noeud* cd(noeud *courant, char *chemin) {
+void* cd(noeud* courant, char* chemin){
     if (!courant->est_dossier || courant->fils == NULL) return NULL;
 
+    if (chemin[0] == '\0') return courant->racine;
     if (chemin[0] == '/') return cd(courant->racine, chemin+1);
     if (chemin[0] == '.'){
         if (chemin[1] == '.') return cd(courant->pere, chemin+2);
@@ -99,6 +100,7 @@ noeud* cd(noeud *courant, char *chemin) {
     }
 
     char* next = strchr(chemin, '/');
+    next = (next == NULL) ? NULL : next+1;
     liste_noeud* liste = courant->fils;
 
     if (next == NULL){
@@ -112,10 +114,10 @@ noeud* cd(noeud *courant, char *chemin) {
             }
             liste = liste->suiv;
         }
-        return courant;
+        return NULL;
     }
 
-    int len = strlen(chemin) - strlen(next); 
+    int len = strlen(chemin) - (strlen(next)+1); 
     char* premier_mot = malloc(sizeof(char)*len);
     assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
@@ -173,17 +175,21 @@ char *concat(char *s1, char *s2) {
 
 void printRacine(noeud* courant, char* tab){   // on commence avec la racine
     if (courant == NULL) return;
+
     int n = nbFils(courant->fils);
     if (n == 0) printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", n);
     else printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
+
     liste_noeud* l = courant->fils;
     while (l != NULL){
         if (l->suiv == NULL) printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
         else printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
         l = l->suiv;
     }
+
     printf("\n");
     l = courant->fils;
+
     while (l != NULL){
         printRacine(l->noeud, concat(tab, "|    "));
         l = l->suiv;
@@ -191,6 +197,7 @@ void printRacine(noeud* courant, char* tab){   // on commence avec la racine
 }
 
 void print(noeud* courant){
+    if (courant->racine == NULL) printf("Racine : NULL\n");
     printRacine(courant->racine, "");
 }
 
@@ -217,6 +224,64 @@ void pwd(noeud* courant){
     free(pwd);
 }
 
+void freeFils(noeud* courant){
+    if (courant->fils == NULL) free(courant);
+
+    while (courant->fils != NULL){
+        freeFils(courant->fils->noeud);
+        courant->fils = courant->fils->suiv;
+    }
+}
+
+void rm(noeud* courant, char* chemin){
+    if (!courant->est_dossier) return;
+
+    if (chemin[0] == '.'){
+        if (chemin[1] == '.') return rm(courant->pere, chemin+2);
+        if (chemin[1] == '/') return rm(courant, chemin+2);
+    }
+
+    char* next = strchr(chemin, '/');
+    next = (next == NULL) ? NULL : next+1; 
+    liste_noeud* liste = courant->fils;
+
+    if (next == NULL){  // il y a plus d'occurence de '/' dans chemin
+        while (liste != NULL){
+            if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
+                if (liste->noeud->est_dossier) freeFils(liste->noeud);
+                else free(liste->noeud);          
+                liste_noeud* tmp = courant->fils;
+                if (tmp == liste){
+                    courant->fils = liste->suiv;
+                    return;
+                }
+                while (tmp->suiv != liste) tmp = tmp->suiv;
+                tmp->suiv = liste->suiv;
+                return;
+            }
+            liste = liste->suiv;
+        }
+        printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", chemin);
+        return;
+    }
+
+    int len = strlen(chemin) - (strlen(next)+1); 
+    char* premier_mot = malloc(sizeof(char)*len);
+    assert(premier_mot != NULL);
+    memmove(premier_mot, chemin, sizeof(char)*len);
+
+    while(liste != NULL){
+        if (strcmp(liste->noeud->nom, premier_mot) == 0){
+            rm(liste->noeud, next);
+            return;
+        }
+        liste = liste->suiv;
+    }
+
+    printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", premier_mot);
+    return;
+}
+
 //int main(int nbr, char *args) //fichier texte + scanf("..")
 int main(){
     /*
@@ -227,31 +292,36 @@ int main(){
         
     }*/
 
-    noeud *racine = malloc(sizeof(noeud));
-    assert(racine != NULL);
-    racine->est_dossier = true;
-    memcpy(racine->nom, "", sizeof(char) * strlen(""));
-    racine->pere = racine;
-    racine->racine = racine;
-    racine->fils = NULL;
+    noeud *courant = malloc(sizeof(noeud));
+    assert(courant != NULL);
+    courant->est_dossier = true;
+    memcpy(courant->nom, "", sizeof(char) * strlen(""));
+    courant->pere = courant;
+    courant->racine = courant;
+    courant->fils = NULL;
 
     // CELA CREER ARBRE DE FIGURE 1
-    mkdir(racine, "Cours");
-    mkdir(racine, "Td");
-    mkdir(racine, "Edt");
+    mkdir(courant, "Cours");
+    mkdir(courant, "Td");
+    touch(courant, "Edt");
 
-    racine = cd(racine, "Cours");
-    mkdir(racine, "ProjetC");
-    mkdir(racine, "Anglais");
+    courant = cd(courant, "Cours");
+    mkdir(courant, "ProjetC");
+    mkdir(courant, "Anglais");
 
-    racine = cd(racine, "../Td");
-    touch(racine, "Td1");
-    touch(racine, "Td2");
+    courant = cd(courant, "../Td");
+    touch(courant, "Td1");
+    touch(courant, "Td2");
 
-    racine = cd(racine, "/.");
+    courant = cd(courant, ""); // ou  'cd(courant, "/");'
     // CELA CREER ARBRE DE FIGURE 1
 
-    print(racine);
+    courant = cd(courant, "Cours/ProjetC");
+    pwd(courant);
+
+    rm(courant, "../Anglais");
+
+    print(courant);
 
     return EXIT_SUCCESS;    
 }
