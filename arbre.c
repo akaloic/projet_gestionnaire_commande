@@ -259,7 +259,7 @@ void rm(noeud* courant, char* chemin){
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
                 if (liste->noeud->est_dossier) freeFils(liste->noeud);
-                free(liste->noeud); 
+                else free(liste->noeud); 
                        
                 liste_noeud* tmp = courant->fils;
                 if (tmp == liste){
