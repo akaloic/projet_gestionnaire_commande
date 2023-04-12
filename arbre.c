@@ -304,6 +304,144 @@ void rm(noeud* courant, char* chemin){
     rmBis(courant, chemin, courant);
 }
 
+//cette fonction donne le nom a la fin du chemin 
+char* get_nom_fichier(char* chemin) {
+    char* nom = strrchr(chemin, '/');
+    if (nom == NULL) {
+        nom = chemin;
+    } else {
+        nom++;
+    }
+    return nom;
+}
+
+//enleve le dernier nom
+char* get_chemin_fichier(char* chemin) {
+    char* chemin_fichier = strrchr(chemin, '/');
+    if (chemin_fichier == NULL) {
+        chemin_fichier = chemin;
+    } else {
+        chemin_fichier++;
+        char* chemin2 = malloc(strlen(chemin) + 1);
+        strncpy(chemin2, chemin, chemin_fichier - chemin - 1);
+        chemin2[chemin_fichier - chemin - 1] = '\0';
+        chemin_fichier = chemin2;
+    }
+    return chemin_fichier;
+}
+
+// recherche le fils d'un noeud avec un nom donné
+noeud* trouve_fils(noeud* courant, char* nom) {
+    if (!courant->est_dossier) {
+        return NULL;
+    }
+    liste_noeud* l = courant->fils;
+    while (l != NULL){
+        if (strcmp(l->noeud->nom, nom) == 0) {
+            return l->noeud;
+        }
+        l = l->suiv;
+    }
+    return NULL;
+}
+
+// verifie si n appartien au sous arbre
+bool appartient_sous_arbre(noeud* n, liste_noeud* arbre) {
+    if (arbre == NULL) {
+        return false;
+    }
+    while (arbre != NULL) {
+        if (n == arbre->noeud) {
+            return true;
+        }
+        if (appartient_sous_arbre(n,arbre->noeud->fils)) {
+            return true;
+        }
+        arbre=arbre->suiv;
+    }
+    return false;
+}
+
+
+// Ajoute un noeud fils à un noeud
+void ajouter_fils(noeud *pere, noeud *fils) {
+    liste_noeud *l = pere->fils;
+    while (l != NULL) {
+        if (strcmp(l->noeud->nom,fils->nom) == 0) {
+            printf("Le noeud %s existe déjà dans le dossier %s.\n", fils->nom, pere->nom);
+            return;
+        }
+        l = l->suiv;
+    }
+    
+    liste_noeud *nvfils = malloc(sizeof(liste_noeud));
+    nvfils->noeud= fils;
+    nvfils->suiv = NULL;
+    
+    if (pere->fils== NULL) {
+        pere->fils =nvfils;
+    } else {
+        liste_noeud *dernier_fils = pere->fils;
+        while (dernier_fils->suiv != NULL) {
+            dernier_fils = dernier_fils->suiv;
+        }
+        dernier_fils->suiv = nvfils;
+    }
+
+    fils->pere = pere;
+}
+
+// copie un noeud et son sous-arbre
+noeud* copier_noeud(noeud* n) {
+    noeud* cp = (noeud*) malloc(sizeof(noeud));
+    cp ->est_dossier = n->est_dossier;
+    strcpy(cp ->nom, n->nom);
+    cp->pere = NULL;
+    cp->racine = NULL;
+    cp ->fils = NULL;
+
+    liste_noeud* fils = n->fils;
+    while (fils != NULL) {
+        ajouter_fils(cp , copier_noeud(fils->noeud));
+        fils = fils->suiv;
+    }
+
+    return cp;
+
+}
+
+
+
+void cp(noeud* courant, char* chemin1, char* chemin2) {
+    noeud* noeud1 = cd(courant, chemin1);
+    if (noeud1 == NULL ) {
+        printf("%s n'existe pas \n", chemin1);
+        return;
+    }
+    if (noeud1->est_dossier == false){
+        printf("%s n'est pas un dossier \n", chemin1);
+        return;
+    }
+    char* nom_nv_noeud = get_nom_fichier(chemin2);
+    char* chemin_destination = get_chemin_fichier(chemin2);
+    noeud* noeud_destination = cd(courant, chemin_destination);
+    if (noeud_destination == NULL || noeud_destination->est_dossier == false ) {
+        printf("Le dossier de destination n'existe pas \n");
+        return;
+    }
+    if (trouve_fils(noeud_destination, nom_nv_noeud) != NULL){
+        printf("Le dossier de destination a un fils ayant le même nom que le nouveau noeud\n");
+        return;
+    }
+    if (appartient_sous_arbre(noeud_destination, noeud1->fils)) {
+        printf("Le noeud à copier fait partie du sous-arbre du noeud de destination\n");
+        return;
+    }
+    noeud* copie_noeud = copier_noeud(noeud1);
+    strcpy(copie_noeud->nom, nom_nv_noeud);
+    ajouter_fils(noeud_destination, copie_noeud);
+}
+
 //int main(int nbr, char *args) //fichier texte + scanf("..")
 int main(){
     /*
