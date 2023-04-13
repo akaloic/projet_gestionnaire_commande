@@ -271,3 +271,8 @@ void cp(noeud* courant, char* chemin1, char* chemin2) {
     ajouter_fils(noeud_destination, copie_noeud);
 }
 
+void mv(noeud *courant, char* chemin1, char* chemin2){
+    cp(courant, chemin1, chemin2);
+    rm(courant, chemin1);
+}
+

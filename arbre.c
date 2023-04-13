@@ -58,9 +58,9 @@ int main(int argc, char *argv[]){
         else if (strcmp(commande, "print") == 0){
             print(courant);
         }
-        //else if (strcmp(commande, "mv") == 0){
-        //    mv(courant, arg1, arg2);
-        //}
+        else if (strcmp(commande, "mv") == 0){
+            mv(courant, arg1, arg2);
+        }
         else if (strcmp(commande, "cp") == 0){
             cp(courant, arg1, arg2);
         }
@@ -74,7 +74,6 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
     
-
     /*
     // CELA CREER ARBRE DE FIGURE 1
     mkdir(courant, "Cours");
@@ -94,6 +93,5 @@ int main(int argc, char *argv[]){
     // CELA CREER ARBRE DE FIGURE 1
     */
 
-    
     return EXIT_SUCCESS;    
 }
