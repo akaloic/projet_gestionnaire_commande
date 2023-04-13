@@ -51,31 +51,36 @@ void ls(noeud *courant){
 }
 
 void touch(noeud* courant, char* nom){
-    if (!courant->est_dossier) return;
+    assert(courant->est_dossier);
 
-    noeud* ficher = malloc(sizeof(noeud));
-    assert(ficher != NULL);
-    ficher->est_dossier = false;
-    memcpy(ficher->nom, nom, sizeof(char) * strlen(nom));
-    ficher->pere = courant;
-    ficher->racine = courant->racine;
-    ficher->fils = NULL;
+    noeud *n = malloc(sizeof(noeud));
+    assert(n != NULL);
+    n->est_dossier = false;
+    estAlpha(nom);
+    memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+    n->pere = courant;
+    n->racine = courant->racine;
+    n->fils = NULL;
 
-    liste_noeud* l = malloc(sizeof(liste_noeud));
+    liste_noeud *l = malloc(sizeof(liste_noeud));
     assert(l != NULL);
-    l->noeud = ficher;
-    l->suiv = NULL;
 
-    if (courant->fils == NULL) courant->fils = l;
-    else{
-        liste_noeud* tmp = courant->fils;
+    if (courant->fils == NULL){
+        courant->fils = l;
+        l->noeud = n;
+        l->suiv = NULL;
+    }else{
+        liste_noeud *tmp = courant->fils;
         while (tmp->suiv != NULL) tmp = tmp->suiv;
         tmp->suiv = l;
+        l->noeud = n;
+        l->suiv = NULL;
     }
 }
 
 void print(noeud* courant){
     if (courant->racine == NULL) printf("Racine : NULL\n");
+    puts("\nArbre :\n");
     printRacine(courant->racine, "");
 }
 
@@ -137,56 +142,60 @@ void* cd(noeud* courant, char* chemin){
             return cd(courant, chemin+2);
     }
 
-    char* next = strchr(chemin, '/');
-    next = (next == NULL) ? NULL : next+1;
+    char* reste = strchr(chemin, '/');
+    reste = (reste == NULL) ? NULL : reste+1;
     liste_noeud* liste = courant->fils;
 
-    //printf("next: %s\n", next);
-
-    if (next == NULL){
+    if (reste == NULL){
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){
+                //printf("%s %s\n", liste->noeud->nom, chemin);
                 if (liste->noeud->est_dossier) return liste->noeud;
                 else {
                     printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
-                    return courant;
+                    return NULL;
                 }
             }
             liste = liste->suiv;
         }
-        return courant;
+        //printf("%s %s\n", liste->noeud->nom, chemin);
+        return NULL;
     }
 
-    int len = strlen(chemin) - (strlen(next)+1); 
+    int len = strlen(chemin) - (strlen(reste)+1); 
     char* premier_mot = malloc(sizeof(char)*len);
     assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
 
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0)
-            return cd(liste->noeud, next);
+            return cd(liste->noeud, reste);
         liste = liste->suiv;
     }
 
     return NULL;
 }
 
-void rmBis(noeud* courant, char* chemin, noeud* origin){
+void rm(noeud* courant, char* chemin){
+    rmAux(courant, chemin, courant);
+}
+
+void rmAux(noeud* courant, char* chemin, noeud* origin){
     if (chemin[0] == '\0'){
         printf("Erreur, il faut passer un chemin non vide en parametre.\n");
         return;
     }
-    if (chemin[0] == '/') {rmBis(courant->racine, chemin+1, origin); return;}
+    if (chemin[0] == '/') {rmAux(courant->racine, chemin+1, origin); return;}
     if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {rmBis(courant->pere, chemin+3, origin); return;}
-        if (chemin[1] == '/') {rmBis(courant, chemin+2, origin); return;}
+        if (chemin[1] == '.' && chemin[2] == '/') {rmAux(courant->pere, chemin+3, origin); return;}
+        if (chemin[1] == '/') {rmAux(courant, chemin+2, origin); return;}
     }
 
-    char* next = strchr(chemin, '/');
-    next = (next == NULL) ? NULL : next+1; 
+    char* reste = strchr(chemin, '/');
+    reste = (reste == NULL) ? NULL : reste+1;
     liste_noeud* liste = courant->fils;
 
-    if (next == NULL){  // il y a plus d'occurence de '/' dans chemin
+    if (reste == NULL){  // il y a plus d'occurence de '/' dans chemin
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
                 while(origin != courant->racine){
@@ -214,14 +223,14 @@ void rmBis(noeud* courant, char* chemin, noeud* origin){
         return;
     }
 
-    int len = strlen(chemin) - (strlen(next)+1); 
+    int len = strlen(chemin) - (strlen(reste)+1); 
     char* premier_mot = malloc(sizeof(char)*len);
     assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
 
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            rmBis(liste->noeud, next, origin);
+            rmAux(liste->noeud, reste, origin);
             return;
         }
         liste = liste->suiv;
@@ -229,10 +238,6 @@ void rmBis(noeud* courant, char* chemin, noeud* origin){
 
     printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", premier_mot);
     return;
-}
-
-void rm(noeud* courant, char* chemin){
-    rmBis(courant, chemin, courant);
 }
 
 void cp(noeud* courant, char* chemin1, char* chemin2) {

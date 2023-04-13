@@ -18,51 +18,66 @@ int main(int argc, char *argv[]){
     courant->racine = courant;
     courant->fils = NULL;
 
+    /*
     FILE *file = fopen(argv[1], "r"); // ouvre le fichier donné en parametre et le lit
     if (file == NULL){
         perror("Probleme ouverture fichier");
         return EXIT_FAILURE;
     }
 
-    char line[50];
-    char command[50];
-    char path[50];
-    int i = 0;
+    char *line = malloc(sizeof(char) * 100);
+    assert(line != NULL);
+    char *commande = malloc(sizeof(char) * 100);
+    assert(commande != NULL);
+    char *arg1 = malloc(sizeof(char) * 100);
+    assert(arg1 != NULL);
+    char *arg2 = malloc(sizeof(char) * 100);
+    assert(arg2 != NULL);
 
-    while(fgets(line, 100, file) != NULL){
-        while(line[i] != ' ' && line[i] != '\n') strncat(command, &line[i++], 1);
-        i++;
-        while(line[i] != '\0' && line[i] != '\n') strncat(path, &line[i++], 1);
-        printf("%s %s", command, path);
-        /*if (strcmp(command, "mkdir") == 0) mkdir(courant, path);
-        else if (strcmp(command, "touch") == 0) touch(courant, path);
-        else if (strcmp(command, "cd") == 0) courant = cd(courant, path);
-        else if (strcmp(command, "rm") == 0) rm(courant, path);
-        else if (strcmp(command, "pwd") == 0) pwd(courant);
-        else if (strcmp(command, "ls") == 0) ls(courant);
-        else if (strcmp(command, "print") == 0) print(courant);
-        else if (strcmp(command, "exit") == 0) break;
-        else printf("'%s' : commande inconnue", command);
-        */
+    while (fgets(line, 100, file) != NULL){
+        printf("%s", line);
+
+        *commande = '\0';
+        *arg1 = '\0';
+        *arg2 = '\0';
+        sscanf(line, "%s %s %s", commande, arg1, arg2);
+
+        if (strcmp(commande, "mkdir") == 0){
+            mkdir(courant, arg1);
+        }
+        else if (strcmp(commande, "touch") == 0){
+            touch(courant, arg1);
+        }
+        else if (strcmp(commande, "cd") == 0){
+            courant = cd(courant, arg1);
+        }
+        else if (strcmp(commande, "pwd") == 0){
+            pwd(courant);
+        }
+        else if (strcmp(commande, "rm") == 0){
+            rm(courant, arg1);
+        }
+        else if (strcmp(commande, "print") == 0){
+            print(courant);
+        }
+        else if (strcmp(commande, "mv") == 0){
+            mv(courant, arg1, arg2);
+        }
+        else if (strcmp(commande, "cp") == 0){
+            cp(courant, arg1, arg2);
+        }
+        else{
+            printf("%s : commande inconnue\n", commande);
+        }
     }
 
-    /*  // ca marche ça
-    fgets(line, 100, file);
-    while(line[i] != ' ' && line[i] != '\n') strncat(command, &line[i++], 1);
-    i++;
-    while(line[i] != '\0' && line[i] != '\n') strncat(path, &line[i++], 1);
-    printf("%s", command);
+    if (fclose(file) != 0){
+        perror("Probleme fermeture fichier");
+        return EXIT_FAILURE;
+    }
     */
 
-    /*
-    noeud *courant = malloc(sizeof(noeud));
-    assert(courant != NULL);
-    courant->est_dossier = true;
-    memcpy(courant->nom, "", sizeof(char) * strlen(""));
-    courant->pere = courant;
-    courant->racine = courant;
-    courant->fils = NULL;
-
+   /*
     // CELA CREER ARBRE DE FIGURE 1
     mkdir(courant, "Cours");
     mkdir(courant, "Td");
@@ -76,23 +91,27 @@ int main(int argc, char *argv[]){
     touch(courant, "Td1");
     touch(courant, "Td2");
 
-    courant = cd(courant, ""); // ou  'cd(courant, "/");'
+    //courant = cd(courant, ""); // ou  'cd(courant, "/");'
     // CELA CREER ARBRE DE FIGURE 1
+*/
 
-    courant = cd(courant, "Cours/ProjetC/../Anglais");
+    mkdir(courant, "Cours");
+    courant = cd(courant, "Cours");
+    mkdir(courant, "ProjetC");
+    mkdir(courant, "Anglais");
+    courant = cd(courant, "");
+    touch(courant, "Edt");
+    cp(courant, "Cours", "/Td");
     pwd(courant);
-
-    //rm(courant, "Td1"); // Td1 erreur
-    rm(courant, "../ProjetC"); // ProjetC OK
-    //rm(courant, "../../Cours"); // Cours NON car parent de courant
+    /*
+    rm(courant, "/Td/ProjetC");
+    rm(courant, "/Td/Anglais");
+    courant = cd(courant, "Td");
+    */
+    mkdir(courant, "td1");
+    mkdir(courant, "td2");
 
     print(courant);
-    */
-
-    if (fclose(file) != 0){
-        perror("Probleme fermeture fichier");
-        return EXIT_FAILURE;
-    }
-
+    
     return EXIT_SUCCESS;    
 }

@@ -5,6 +5,7 @@ extern void mkdir(noeud *, char *);
 extern void ls(noeud *);
 extern void touch(noeud *, char *);
 extern void rm(noeud *, char *);
+extern void rmAux(noeud *, char *, noeud *);
 extern void pwd(noeud *);
 extern void print(noeud *);
 extern void printRacine(noeud*, char*);
