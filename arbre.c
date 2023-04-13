@@ -18,7 +18,6 @@ int main(int argc, char *argv[]){
     courant->racine = courant;
     courant->fils = NULL;
 
-    /*
     FILE *file = fopen(argv[1], "r"); // ouvre le fichier donné en parametre et le lit
     if (file == NULL){
         perror("Probleme ouverture fichier");
@@ -35,7 +34,6 @@ int main(int argc, char *argv[]){
     assert(arg2 != NULL);
 
     while (fgets(line, 100, file) != NULL){
-        printf("%s", line);
 
         *commande = '\0';
         *arg1 = '\0';
@@ -60,9 +58,9 @@ int main(int argc, char *argv[]){
         else if (strcmp(commande, "print") == 0){
             print(courant);
         }
-        else if (strcmp(commande, "mv") == 0){
-            mv(courant, arg1, arg2);
-        }
+        //else if (strcmp(commande, "mv") == 0){
+        //    mv(courant, arg1, arg2);
+        //}
         else if (strcmp(commande, "cp") == 0){
             cp(courant, arg1, arg2);
         }
@@ -75,26 +73,10 @@ int main(int argc, char *argv[]){
         perror("Probleme fermeture fichier");
         return EXIT_FAILURE;
     }
-    */
+    
 
-   /*
+    /*
     // CELA CREER ARBRE DE FIGURE 1
-    mkdir(courant, "Cours");
-    mkdir(courant, "Td");
-    touch(courant, "Edt");
-
-    courant = cd(courant, "Cours");
-    mkdir(courant, "ProjetC");
-    mkdir(courant, "Anglais");
-
-    courant = cd(courant, "../Td");
-    touch(courant, "Td1");
-    touch(courant, "Td2");
-
-    //courant = cd(courant, ""); // ou  'cd(courant, "/");'
-    // CELA CREER ARBRE DE FIGURE 1
-*/
-
     mkdir(courant, "Cours");
     courant = cd(courant, "Cours");
     mkdir(courant, "ProjetC");
@@ -103,15 +85,15 @@ int main(int argc, char *argv[]){
     touch(courant, "Edt");
     cp(courant, "Cours", "/Td");
     pwd(courant);
-    /*
     rm(courant, "/Td/ProjetC");
     rm(courant, "/Td/Anglais");
     courant = cd(courant, "Td");
-    */
     mkdir(courant, "td1");
     mkdir(courant, "td2");
-
     print(courant);
+    // CELA CREER ARBRE DE FIGURE 1
+    */
+
     
     return EXIT_SUCCESS;    
 }

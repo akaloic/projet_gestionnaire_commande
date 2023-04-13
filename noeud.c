@@ -93,8 +93,8 @@ noeud* copier_noeud(noeud* n) {
     noeud* cp = (noeud*) malloc(sizeof(noeud));
     cp ->est_dossier = n->est_dossier;
     strcpy(cp ->nom, n->nom);
-    cp->pere = NULL;
-    cp->racine = NULL;
+    cp->pere = NULL;    // le pere est défini dans cp
+    cp->racine = n->racine;
     cp ->fils = NULL;
 
     liste_noeud* fils = n->fils;

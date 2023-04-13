@@ -79,7 +79,7 @@ void touch(noeud* courant, char* nom){
 }
 
 void print(noeud* courant){
-    if (courant->racine == NULL) printf("Racine : NULL\n");
+    assert(courant->racine != NULL);
     puts("\nArbre :\n");
     printRacine(courant->racine, "");
 }
@@ -149,7 +149,6 @@ void* cd(noeud* courant, char* chemin){
     if (reste == NULL){
         while (liste != NULL){
             if (strcmp(liste->noeud->nom, chemin) == 0){
-                //printf("%s %s\n", liste->noeud->nom, chemin);
                 if (liste->noeud->est_dossier) return liste->noeud;
                 else {
                     printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
@@ -158,7 +157,6 @@ void* cd(noeud* courant, char* chemin){
             }
             liste = liste->suiv;
         }
-        //printf("%s %s\n", liste->noeud->nom, chemin);
         return NULL;
     }
 
@@ -246,14 +244,16 @@ void cp(noeud* courant, char* chemin1, char* chemin2) {
         printf("%s n'existe pas \n", chemin1);
         return;
     }
-    if (noeud1->est_dossier == false){
+    if (!noeud1->est_dossier){
         printf("%s n'est pas un dossier \n", chemin1);
         return;
     }
+
     char* nom_nv_noeud = get_nom_fichier(chemin2);
     char* chemin_destination = get_chemin_fichier(chemin2);
     noeud* noeud_destination = cd(courant, chemin_destination);
-    if (noeud_destination == NULL || noeud_destination->est_dossier == false ) {
+
+    if (noeud_destination == NULL || !noeud_destination->est_dossier) {
         printf("Le dossier de destination n'existe pas \n");
         return;
     }
@@ -267,6 +267,7 @@ void cp(noeud* courant, char* chemin1, char* chemin2) {
     }
     noeud* copie_noeud = copier_noeud(noeud1);
     strcpy(copie_noeud->nom, nom_nv_noeud);
+    copie_noeud->pere = noeud_destination;
     ajouter_fils(noeud_destination, copie_noeud);
 }
 

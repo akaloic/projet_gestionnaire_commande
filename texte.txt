@@ -10,3 +10,4 @@ rm /Td/Anglais
 cd Td
 mkdir td1 
 mkdir td2
+print
