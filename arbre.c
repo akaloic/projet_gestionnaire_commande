@@ -8,6 +8,8 @@
 #include "auxiliare.h"
 #include "commande.h"
 
+#define MAX_PATH 100
+
 int main(int argc, char *argv[]){
     
     noeud *courant = malloc(sizeof(noeud));
@@ -24,16 +26,16 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
 
-    char *line = malloc(sizeof(char) * 100);
+    char *line = malloc(sizeof(char) * MAX_PATH);
     assert(line != NULL);
-    char *commande = malloc(sizeof(char) * 100);
+    char *commande = malloc(sizeof(char) * MAX_PATH);
     assert(commande != NULL);
-    char *arg1 = malloc(sizeof(char) * 100);
+    char *arg1 = malloc(sizeof(char) * MAX_PATH);
     assert(arg1 != NULL);
-    char *arg2 = malloc(sizeof(char) * 100);
+    char *arg2 = malloc(sizeof(char) * MAX_PATH);
     assert(arg2 != NULL);
 
-    while (fgets(line, 100, file) != NULL){
+    while (fgets(line, MAX_PATH, file) != NULL){
 
         *commande = '\0';
         *arg1 = '\0';
