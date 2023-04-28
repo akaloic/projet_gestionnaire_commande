@@ -1,18 +1,24 @@
-CC=gcc 
-WAL=-Wall
-DEPS=aux.h commandes.h noeud.h
-OBJ=aux.o commandes.o noeud.o
-ARB=arbre
+CC = gcc
+CFLAGS = -Wall
+DEPS = auxiliare.h commande.h noeud.h
+EXEC = arbre
 
-all : $(ABR)
+all : $(EXEC)
 
-%.o : %.c $(DEPS)
-	$(CC) $(WAL) -c -o $@ $<
+auxiliare.o : auxiliare.c auxiliare.h
+	$(CC) $(CFLAGS) -c auxiliare.c
 
-$(ABR) : $(ABR).o auxiliare.o commande.o noeud.o
-	$(CC) $(WAL) -o $@ $^
+commande.o : commande.c commande.h
+	$(CC) $(CFLAGS) -c commande.c
+
+noeud.o : noeud.c noeud.h
+	$(CC) $(CFLAGS) -c noeud.c
+
+arbre.o : arbre.c $(DEPS)
+	$(CC) $(CFLAGS) -c arbre.c
+
+arbre : arbre.o auxiliare.o commande.o noeud.o
+	$(CC) $(CFLAGS) -o arbre arbre.o auxiliare.o commande.o noeud.o
 
 clean :
-	rm -rf $(ABR) *.o
-
-
+	rm -rf $(EXEC) *.o

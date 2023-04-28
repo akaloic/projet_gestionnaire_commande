@@ -1,9 +1,8 @@
 READ ME : 
 
-il faudra un fichier readme.txt expliquant comment compiler
- et exécuter votre projet et le cas échéant détaillant les 
- éventuels problèmes dont souffre votre projet.
+Pour lancer le programme, il suffit de taper : make, dans le terminal 
 
-gcc -Wall -c commande.c noeud.c auxiliare.c arbre.c   
-gcc -Wall -o arbre arbre.o commande.o noeud.o auxiliare.o
-./arbre texte.txt
+Si 
+    cela compile, tapé : ./arbre texte.txt 
+Sinon 
+    tapé : make clean et refaites : make
