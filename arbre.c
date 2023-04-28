@@ -75,6 +75,12 @@ int main(int argc, char *argv[]){
         perror("Probleme fermeture fichier");
         return EXIT_FAILURE;
     }
+
+    free(courant);
+    free(commande);
+    free(line);
+    free(arg1);
+    free(arg2);
     
     /*
     // CELA CREER ARBRE DE FIGURE 1
