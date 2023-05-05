@@ -238,41 +238,113 @@ void rmAux(noeud* courant, char* chemin, noeud* origin){
     return;
 }
 
-void cp(noeud* courant, char* chemin1, char* chemin2) {
-    noeud* noeud1 = cd(courant, chemin1);
-    if (noeud1 == NULL ) {
-        printf("%s n'existe pas \n", chemin1);
-        return;
-    }
-    if (!noeud1->est_dossier){
-        printf("%s n'est pas un dossier \n", chemin1);
+
+
+void cp(noeud* courant, char* chem1, char* chem2) {
+
+    noeud *depart = cd(courant, chem1);
+
+    if(depart == NULL){
+        printf("Erreur, destination indiqué par chemin1 est éroné.%s", chem1);
         return;
     }
 
-    char* nom_nv_noeud = get_nom_fichier(chemin2);
-    char* chemin_destination = get_chemin_fichier(chemin2);
-    noeud* noeud_destination = cd(courant, chemin_destination);
+    char *noLast = withoutLastName(chem2);
+    char *last = getLastName(chem2);
+    
+    noeud *copie = copier_noeud(depart);
+    for (int i = 0; i < strlen(last); i++) copie->nom[i] = last[i];
+    copie->nom[strlen(last)] = '\0';
 
-    if (noeud_destination == NULL || !noeud_destination->est_dossier) {
-        printf("Le dossier de destination n'existe pas \n");
+    if (strchr(chem2, '/') == NULL){
+        copie->pere = courant;
+        if (!appartient_sous_arbre(courant, courant->fils)){
+            ajout_noeud_a_liste(copie, &courant->fils);
+            return;
+        }else{  
+            puts("Il a apparait deja dans le noeud courant");
+            return;
+        }
+    }
+
+    copie->pere = courant;
+    noeud *arrive = cd(courant, noLast);
+
+    if (arrive == NULL){
+        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
         return;
     }
-    if (trouve_fils(noeud_destination, nom_nv_noeud) != NULL){
-        printf("Le dossier de destination a un fils ayant le même nom que le nouveau noeud\n");
+    if (!arrive->est_dossier){
+        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un fichier.");
         return;
     }
-    if (appartient_sous_arbre(noeud_destination, noeud1->fils)) {
-        printf("Le noeud à copier fait partie du sous-arbre du noeud de destination\n");
+    if (estParent(depart, arrive)){
+        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
         return;
     }
-    noeud* copie_noeud = copier_noeud(noeud1);
-    strcpy(copie_noeud->nom, nom_nv_noeud);
-    copie_noeud->pere = noeud_destination;
-    ajouter_fils(noeud_destination, copie_noeud);
+    if (appartient_sous_arbre(copie, arrive->fils)){
+        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
+        return;
+    }
+
+    ajout_noeud_a_liste(copie, &arrive->fils);
+
+    free(noLast);   
 }
 
-void mv(noeud *courant, char* chemin1, char* chemin2){
-    cp(courant, chemin1, chemin2);
-    rm(courant, chemin1);
+void mv(noeud *courant, char *chemin1, char *chemin2) {
+    noeud *depart = cd(courant, chemin1);
+    if (depart ==NULL) {
+        printf("Erreur, destination indiqué par chemin1 est éroné.%s", chemin1);
+        return;
+    }
+
+    char *noLast = withoutLastName(chemin2);
+    char *last = getLastName(chemin2);
+
+    if (strchr(chemin2, '/') == NULL){
+        memcpy(depart->nom, last, sizeof(char) * strlen(last));
+        depart->nom[strlen(last)] = '\0';
+        return;
+    }
+
+    noeud *arrive= cd(courant,noLast);
+
+    if (arrive == NULL) {
+        printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin2 est un chemin menant nulle part.");
+        return;
+    }
+    if (!arrive->est_dossier) {
+        printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un fichier.");
+        return;
+    }
+    if (estParent(depart, arrive)) {
+        printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un parent du chemin2 .");
+        return;
+    }
+    if (appartient_sous_arbre(depart, arrive->fils)) {
+        printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un parent du chemin2.");
+        return;
+    }
+
+    liste_noeud *liste = depart->pere->fils;
+    if (liste->noeud ==depart) {
+        depart->pere->fils = liste->suiv;
+    } else {
+        while (liste != NULL && liste->suiv != NULL && liste->suiv->noeud != depart) {
+            liste = liste->suiv;
+        }
+        if (liste != NULL&& liste->suiv != NULL) {
+            liste_noeud *tmp = liste->suiv;
+            liste->suiv = tmp->suiv;
+        }
+    }
+
+    memcpy(depart->nom, last, sizeof(char) * strlen(last));
+    depart->nom[strlen(last)] = '\0';
+    depart->pere = arrive;
+    ajout_noeud_a_liste(depart, &arrive->fils);
+
+    free(noLast);
 }
 

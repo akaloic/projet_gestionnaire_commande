@@ -11,7 +11,6 @@
 #define MAX_PATH 100
 
 int main(int argc, char *argv[]){
-    
     noeud *courant = malloc(sizeof(noeud));
     assert(courant != NULL);
     courant->est_dossier = true;
@@ -75,6 +74,13 @@ int main(int argc, char *argv[]){
         perror("Probleme fermeture fichier");
         return EXIT_FAILURE;
     }
+
+    free(courant);
+    free(commande);
+    free(line);
+    free(arg1);
+    free(arg2);
+    
     
     /*
     // CELA CREER ARBRE DE FIGURE 1
