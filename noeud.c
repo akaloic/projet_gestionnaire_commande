@@ -45,33 +45,38 @@ int nbFils(liste_noeud* liste){
 
 // verifie si noeud appartient au sous arbre
 bool appartient_sous_arbre(noeud* noeud, liste_noeud* arbre) {
-    if (arbre == NULL) {
-        return false;
-    }
-    while (arbre != NULL) {
-        if (noeud == arbre->noeud) {
-            return true;
-        }
-        if (appartient_sous_arbre(noeud,arbre->noeud->fils)) {
-            return true;
-        }
-        arbre=arbre->suiv;
+    if (arbre == NULL) return false;
+    liste_noeud* l = arbre;
+    while (l != NULL){
+        if (strcmp(l->noeud->nom, noeud->nom) == 0) return true;
+        l = l->suiv;
     }
     return false;
 }
 
+bool estParent(noeud *pere, noeud *fils){
+    noeud *verifSA = fils;
+    while(verifSA != verifSA->racine){
+        if (verifSA == pere) return true;
+        verifSA = verifSA->pere;
+    }
+    return false;
+}
+
+// Ajoute N à Fils
+void ajout_noeud_a_liste(noeud *n, liste_noeud **fils){
+    liste_noeud *tmp = (*fils);
+    while(tmp->suiv != NULL) tmp = tmp->suiv;
+    liste_noeud *nv = malloc(sizeof(liste_noeud));
+    nv->noeud = n;
+    nv->suiv = NULL;
+    tmp->suiv = nv;
+}
+
 // Ajoute un noeud fils à un noeud
 void ajouter_fils(noeud *pere, noeud *fils) {
-    liste_noeud *l = pere->fils;
-    while (l != NULL) {
-        if (strcmp(l->noeud->nom,fils->nom) == 0) {
-            printf("Le noeud %s existe déjà dans le dossier %s.\n", fils->nom, pere->nom);
-            return;
-        }
-        l = l->suiv;
-    }
-    
     liste_noeud *nvfils = malloc(sizeof(liste_noeud));
+    assert(nvfils != NULL);
     nvfils->noeud= fils;
     nvfils->suiv = NULL;
     
@@ -90,10 +95,10 @@ void ajouter_fils(noeud *pere, noeud *fils) {
 
 // copie un noeud et son sous-arbre
 noeud* copier_noeud(noeud* n) {
-    noeud* cp = (noeud*) malloc(sizeof(noeud));
+    noeud* cp = malloc(sizeof(noeud));
     cp ->est_dossier = n->est_dossier;
     strcpy(cp ->nom, n->nom);
-    cp->pere = NULL;    // le pere est défini dans cp
+    cp->pere = n->pere;    // le pere est défini dans cp
     cp->racine = n->racine;
     cp ->fils = NULL;
 

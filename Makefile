@@ -5,20 +5,20 @@ EXEC = arbre
 
 all : $(EXEC)
 
-auxiliare.o : auxiliare.c auxiliare.h
-	$(CC) $(CFLAGS) -c auxiliare.c
+auxiliare.o : auxiliare.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-commande.o : commande.c commande.h
-	$(CC) $(CFLAGS) -c commande.c
+commande.o : commande.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-noeud.o : noeud.c noeud.h
-	$(CC) $(CFLAGS) -c noeud.c
+noeud.o : noeud.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 arbre.o : arbre.c $(DEPS)
-	$(CC) $(CFLAGS) -c arbre.c
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-arbre : arbre.o auxiliare.o commande.o noeud.o
-	$(CC) $(CFLAGS) -o arbre arbre.o auxiliare.o commande.o noeud.o
+$(EXEC) : arbre.o auxiliare.o commande.o noeud.o
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean :
 	rm -rf $(EXEC) *.o

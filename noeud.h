@@ -22,5 +22,7 @@ extern int nbFils(liste_noeud *);
 extern bool appartient_sous_arbre(noeud* noeud, liste_noeud* arbre);
 extern void ajouter_fils(noeud *pere, noeud *fils);
 extern noeud* copier_noeud(noeud *n);
+extern void ajout_noeud_a_liste(noeud *, liste_noeud **);
+extern bool estParent(noeud *, noeud *);
 
 #endif
