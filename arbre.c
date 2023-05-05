@@ -49,6 +49,10 @@ int main(int argc, char *argv[]){
         }
         else if (strcmp(commande, "cd") == 0){
             courant = cd(courant, arg1);
+            if (courant == NULL){
+                puts("Erreur, le chemin emprentrait n'existe pas.");
+                return EXIT_FAILURE;
+            }
         }
         else if (strcmp(commande, "pwd") == 0){
             pwd(courant);

@@ -128,7 +128,7 @@ void pwd(noeud* courant){
     free(pwd);
 }
 
-void* cd(noeud* courant, char* chemin){
+noeud* cd(noeud* courant, char* chemin){
     assert(courant->est_dossier);
 
     if (chemin[0] == '\0') return courant->racine;
@@ -166,8 +166,10 @@ void* cd(noeud* courant, char* chemin){
     memmove(premier_mot, chemin, sizeof(char)*len);
 
     while(liste != NULL){
-        if (strcmp(liste->noeud->nom, premier_mot) == 0)
+        if (strcmp(liste->noeud->nom, premier_mot) == 0){
+            free(premier_mot);
             return cd(liste->noeud, reste);
+        }
         liste = liste->suiv;
     }
 
