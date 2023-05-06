@@ -85,7 +85,10 @@ void print(noeud* courant){
 }
 
 void printRacine(noeud* courant, char* tab){   // on commence avec la racine
-    if (courant == NULL) return;
+    if (courant == NULL) {
+        free(tab);
+        return;
+    }
 
     int n = nbFils(courant->fils);
     if (n == 0) printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", n);
@@ -100,7 +103,9 @@ void printRacine(noeud* courant, char* tab){   // on commence avec la racine
     printf("\n");
     l = courant->fils;
     while (l != NULL){
-        printRacine(l->noeud, concat(tab, "|    "));
+        char *cat = concat(tab, "|    ");
+        printRacine(l->noeud, cat);
+        free(cat);
         l = l->suiv;
     }
 }
