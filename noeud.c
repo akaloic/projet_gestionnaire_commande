@@ -6,15 +6,15 @@
 #include <ctype.h>
 #include "noeud.h"
 
-void freeFils(noeud* courant){
+void freeFils(noeud *courant){
     if (courant->fils == NULL) return;
     liste_noeud* l = courant->fils;
     while (l != NULL){
-        freeFils(l->noeud);
+        liste_noeud* tmp = l;
+        freeFils(tmp->noeud);
         l = l->suiv;
+        free(tmp);
     }
-    free(l);
-    free(courant->fils);
 }
 
 // recherche le fils d'un noeud avec un nom donné
@@ -75,32 +75,28 @@ void ajout_noeud_a_liste(noeud *n, liste_noeud **fils){
 
 // Ajoute un noeud fils à un noeud
 void ajouter_fils(noeud *pere, noeud *fils) {
-    liste_noeud *nvfils = malloc(sizeof(liste_noeud));
-    assert(nvfils != NULL);
-    nvfils->noeud= fils;
-    nvfils->suiv = NULL;
-    
-    if (pere->fils== NULL) {
-        pere->fils =nvfils;
-    } else {
-        liste_noeud *dernier_fils = pere->fils;
-        while (dernier_fils->suiv != NULL) {
-            dernier_fils = dernier_fils->suiv;
-        }
-        dernier_fils->suiv = nvfils;
-    }
+    assert(pere->est_dossier);
 
-    fils->pere = pere;
+    if (pere->fils == NULL){
+        liste_noeud *l = malloc(sizeof(liste_noeud));
+        assert(l != NULL);
+        l->noeud = fils;
+        l->suiv = NULL;
+        pere->fils = l;
+    }else{
+        ajout_noeud_a_liste(fils, &(pere->fils));
+    }
 }
 
 // copie un noeud et son sous-arbre
 noeud* copier_noeud(noeud* n) {
     noeud* cp = malloc(sizeof(noeud));
-    cp ->est_dossier = n->est_dossier;
+    assert(cp != NULL);
     strcpy(cp ->nom, n->nom);
-    cp->pere = n->pere;    // le pere est défini dans cp
+    cp->est_dossier = n->est_dossier;
+    cp->pere = n->pere;    
     cp->racine = n->racine;
-    cp ->fils = NULL;
+    cp->fils = NULL;
 
     liste_noeud* fils = n->fils;
     while (fils != NULL) {

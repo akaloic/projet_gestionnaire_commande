@@ -9,11 +9,13 @@
 
 void mkdir(noeud *courant, char* nom){
     if (courant->est_dossier == false) return;
+
     noeud *n = malloc(sizeof(noeud));
     assert(n != NULL);
-    n->est_dossier = true;
     estAlpha(nom);
+
     memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+    n->est_dossier = true;
     n->pere = courant;
     n->racine = courant->racine;
     n->fils = NULL;
@@ -31,7 +33,7 @@ void mkdir(noeud *courant, char* nom){
         tmp->suiv = l;
         l->noeud = n;
         l->suiv = NULL;
-    }  
+    }
 }
 
 void ls(noeud *courant){
@@ -55,9 +57,10 @@ void touch(noeud* courant, char* nom){
 
     noeud *n = malloc(sizeof(noeud));
     assert(n != NULL);
-    n->est_dossier = false;
     estAlpha(nom);
+
     memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+    n->est_dossier = false;
     n->pere = courant;
     n->racine = courant->racine;
     n->fils = NULL;
@@ -78,35 +81,31 @@ void touch(noeud* courant, char* nom){
     }
 }
 
-void print(noeud* courant){
-    assert(courant->racine != NULL);
-    puts("\nArbre :\n");
-    printRacine(courant->racine, "");
-}
+void print(noeud* courant, char tab[]){   // on commence avec la racine
+    if (courant == NULL) return;
 
-void printRacine(noeud* courant, char* tab){   // on commence avec la racine
-    if (courant == NULL) {
-        free(tab);
+    int nb = nbFils(courant->fils);
+    if (nb == 0) {
+        printf("%sNoeud : '%s' (%s), %d fils\n", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
         return;
     }
+    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
 
-    int n = nbFils(courant->fils);
-    if (n == 0) printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", n);
-    else printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
-
-    liste_noeud* l = courant->fils;
-    while (l != NULL){
-        if (l->suiv == NULL) printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-        else printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-        l = l->suiv;
-    }
-    printf("\n");
-    l = courant->fils;
-    while (l != NULL){
-        char *cat = concat(tab, "|    ");
-        printRacine(l->noeud, cat);
-        free(cat);
-        l = l->suiv;
+    if (courant->fils != NULL){
+        liste_noeud* l = courant->fils;
+        while (l != NULL){
+            printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+            l = l->suiv;
+        }
+        printf("\n");
+        l = courant->fils;
+        char tab2[100] = "";
+        strcat(tab2, tab);
+        strcat(tab2, "|     ");
+        while (l != NULL){
+            print(l->noeud, tab2);
+            l = l->suiv;
+        }
     }
 }
 
@@ -134,6 +133,7 @@ void pwd(noeud* courant){
 }
 
 noeud* cd(noeud* courant, char* chemin){
+    assert(courant != NULL);
     assert(courant->est_dossier);
 
     if (chemin[0] == '\0') return courant->racine;
@@ -181,19 +181,17 @@ noeud* cd(noeud* courant, char* chemin){
     return NULL;
 }
 
-void rm(noeud* courant, char* chemin){
-    rmAux(courant, chemin, courant);
-}
+void rm(noeud* courant, char* chemin, noeud* origin){
+    assert(courant != NULL);
 
-void rmAux(noeud* courant, char* chemin, noeud* origin){
     if (chemin[0] == '\0'){
         printf("Erreur, il faut passer un chemin non vide en parametre.\n");
         return;
     }
-    if (chemin[0] == '/') {rmAux(courant->racine, chemin+1, origin); return;}
+    if (chemin[0] == '/') {rm(courant->racine, chemin+1, origin); return;}
     if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {rmAux(courant->pere, chemin+3, origin); return;}
-        if (chemin[1] == '/') {rmAux(courant, chemin+2, origin); return;}
+        if (chemin[1] == '.' && chemin[2] == '/') {rm(courant->pere, chemin+3, origin); return;}
+        if (chemin[1] == '/') {rm(courant, chemin+2, origin); return;}
     }
 
     char* reste = strchr(chemin, '/');
@@ -235,7 +233,7 @@ void rmAux(noeud* courant, char* chemin, noeud* origin){
 
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            rmAux(liste->noeud, reste, origin);
+            rm(liste->noeud, reste, origin);
             return;
         }
         liste = liste->suiv;
@@ -248,6 +246,7 @@ void rmAux(noeud* courant, char* chemin, noeud* origin){
 
 
 void cp(noeud* courant, char* chem1, char* chem2) {
+    assert(courant != NULL);
 
     noeud *verifDepart = cd(courant, chem1);
 

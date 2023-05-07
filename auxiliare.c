@@ -15,7 +15,7 @@ void estAlpha(char *nom){
     }
 }
 
-char concat(char *s1, char *s2) {
+char *concat(char *s1, char *s2) {
     char *result = (char *)malloc(strlen(s1) + strlen(s2) + 1);
     strcpy(result, s1);
     strcat(result, s2);
