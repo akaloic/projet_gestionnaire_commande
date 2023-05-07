@@ -8,12 +8,17 @@
 #include "commande.h"
 
 void mkdir(noeud *courant, char* nom){
+    if (strlen(nom) >= 100){
+        printf("Le nom du dossier est trop long.\n");
+        return;
+    }
+
     if (courant->est_dossier == false) return;
     noeud *n = malloc(sizeof(noeud));
     assert(n != NULL);
     n->est_dossier = true;
     estAlpha(nom);
-    memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+    memcpy(n->nom, nom, sizeof(char) * (strlen(nom) + 1));
     n->pere = courant;
     n->racine = courant->racine;
     n->fils = NULL;
@@ -31,8 +36,9 @@ void mkdir(noeud *courant, char* nom){
         tmp->suiv = l;
         l->noeud = n;
         l->suiv = NULL;
-    }  
+    }
 }
+
 
 void ls(noeud *courant){
     if (!courant->est_dossier) {
@@ -55,9 +61,10 @@ void touch(noeud* courant, char* nom){
 
     noeud *n = malloc(sizeof(noeud));
     assert(n != NULL);
-    n->est_dossier = false;
     estAlpha(nom);
-    memcpy(n->nom, nom, sizeof(char) * strlen(nom));
+
+    memcpy(n->nom, nom, sizeof(char) * (strlen(nom) + 1)); // Ajout de +1 ici
+    n->est_dossier = false;
     n->pere = courant;
     n->racine = courant->racine;
     n->fils = NULL;
@@ -76,32 +83,34 @@ void touch(noeud* courant, char* nom){
         l->noeud = n;
         l->suiv = NULL;
     }
+
 }
 
-void print(noeud* courant){
-    assert(courant->racine != NULL);
-    puts("\nArbre :\n");
-    printRacine(courant->racine, "");
-}
-
-void printRacine(noeud* courant, char* tab){   // on commence avec la racine
+void print(noeud* courant, char tab[]){   // on commence avec la racine
     if (courant == NULL) return;
 
-    int n = nbFils(courant->fils);
-    if (n == 0) printf("%sNoeud : '%s' (%s), %d fils", tab, courant->nom, courant->est_dossier ? "D" : "F", n);
-    else printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
-
-    liste_noeud* l = courant->fils;
-    while (l != NULL){
-        if (l->suiv == NULL) printf(" %s (%s)", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-        else printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-        l = l->suiv;
+    int nb = nbFils(courant->fils);
+    if (nb == 0) {
+        printf("%sNoeud : '%s' (%s), %d fils\n", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+        return;
     }
-    printf("\n");
-    l = courant->fils;
-    while (l != NULL){
-        printRacine(l->noeud, concat(tab, "|    "));
-        l = l->suiv;
+    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+
+    if (courant->fils != NULL){
+        liste_noeud* l = courant->fils;
+        while (l != NULL){
+            printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+            l = l->suiv;
+        }
+        printf("\n");
+        l = courant->fils;
+        char tab2[100] = "";
+        strcat(tab2, tab);
+        strcat(tab2, "|     ");
+        while (l != NULL){
+            print(l->noeud, tab2);
+            l = l->suiv;
+        }
     }
 }
 
@@ -128,7 +137,8 @@ void pwd(noeud* courant){
     free(pwd);
 }
 
-void* cd(noeud* courant, char* chemin){
+noeud* cd(noeud* courant, char* chemin){
+    assert(courant != NULL);
     assert(courant->est_dossier);
 
     if (chemin[0] == '\0') return courant->racine;
@@ -161,32 +171,33 @@ void* cd(noeud* courant, char* chemin){
     }
 
     int len = strlen(chemin) - (strlen(reste)+1); 
-    char* premier_mot = malloc(sizeof(char)*len);
+    char* premier_mot = malloc(sizeof(char) * (len + 1));
     assert(premier_mot != NULL);
-    memmove(premier_mot, chemin, sizeof(char)*len);
+    memmove(premier_mot, chemin, sizeof(char) * len);
+    premier_mot[len] = '\0';
 
     while(liste != NULL){
-        if (strcmp(liste->noeud->nom, premier_mot) == 0)
+        if (strcmp(liste->noeud->nom, premier_mot) == 0){
+            free(premier_mot);
             return cd(liste->noeud, reste);
+        }
         liste = liste->suiv;
     }
 
     return NULL;
 }
 
-void rm(noeud* courant, char* chemin){
-    rmAux(courant, chemin, courant);
-}
+void rm(noeud* courant, char* chemin, noeud* origin){
+    assert(courant != NULL);
 
-void rmAux(noeud* courant, char* chemin, noeud* origin){
     if (chemin[0] == '\0'){
         printf("Erreur, il faut passer un chemin non vide en parametre.\n");
         return;
     }
-    if (chemin[0] == '/') {rmAux(courant->racine, chemin+1, origin); return;}
+    if (chemin[0] == '/') {rm(courant->racine, chemin+1, origin); return;}
     if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {rmAux(courant->pere, chemin+3, origin); return;}
-        if (chemin[1] == '/') {rmAux(courant, chemin+2, origin); return;}
+        if (chemin[1] == '.' && chemin[2] == '/') {rm(courant->pere, chemin+3, origin); return;}
+        if (chemin[1] == '/') {rm(courant, chemin+2, origin); return;}
     }
 
     char* reste = strchr(chemin, '/');
@@ -228,7 +239,7 @@ void rmAux(noeud* courant, char* chemin, noeud* origin){
 
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            rmAux(liste->noeud, reste, origin);
+            rm(liste->noeud, reste, origin);
             return;
         }
         liste = liste->suiv;
@@ -241,6 +252,7 @@ void rmAux(noeud* courant, char* chemin, noeud* origin){
 
 
 void cp(noeud* courant, char* chem1, char* chem2) {
+    assert(courant != NULL);
 
     noeud *depart = cd(courant, chem1);
 
