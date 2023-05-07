@@ -248,9 +248,9 @@ void rm(noeud* courant, char* chemin, noeud* origin){
 void cp(noeud* courant, char* chem1, char* chem2) {
     assert(courant != NULL);
 
-    noeud *verifDepart = cd(courant, chem1);
+    noeud *depart = cd(courant, chem1);
 
-    if(verifDepart == NULL){
+    if(depart == NULL){
         printf("Erreur, destination indiqué par chemin1 est éroné.%s", chem1);
         return;
     }
@@ -258,7 +258,7 @@ void cp(noeud* courant, char* chem1, char* chem2) {
     char *noLast = withoutLastName(chem2);
     char *last = getLastName(chem2);
     
-    noeud *copie = copier_noeud(verifDepart);
+    noeud *copie = copier_noeud(depart);
     for (int i = 0; i < strlen(last); i++) copie->nom[i] = last[i];
     copie->nom[strlen(last)] = '\0';
 
@@ -274,31 +274,36 @@ void cp(noeud* courant, char* chem1, char* chem2) {
     }
 
     copie->pere = courant;
-    noeud *verifArrive = cd(courant, noLast);
+    noeud *arrive = cd(courant, noLast);
 
-    if (verifArrive == NULL){
+    if (arrive == NULL){
         printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
         return;
     }
-    if (!verifArrive->est_dossier){
+    if (!arrive->est_dossier){
         printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un fichier.");
         return;
     }
-    if (estParent(verifDepart, verifArrive)){
+    if (estParent(depart, arrive)){
         printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
         return;
     }
-    if (appartient_sous_arbre(copie, verifArrive->fils)){
+    if (appartient_sous_arbre(copie, arrive->fils)){
         printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
         return;
     }
 
-    ajout_noeud_a_liste(copie, &verifArrive->fils);
+    ajout_noeud_a_liste(copie, &arrive->fils);
 
     free(noLast);   
 }
 
 void mv(noeud *courant, char* chemin1, char* chemin2){
-    
+    noeud *depart = cd(courant, chemin1);
+    if(depart == NULL){
+        puts("Erreur, destination indiqué par chemin1 est éroné.");
+        return;
+    }
+
 }
 
