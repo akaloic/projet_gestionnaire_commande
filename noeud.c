@@ -16,6 +16,7 @@ void freeFils(noeud *courant){
         l = l->suiv;
         free(tmp);
     }
+    free(courant);
 }
 
 // recherche le fils d'un noeud avec un nom donné
