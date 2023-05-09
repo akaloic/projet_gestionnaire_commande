@@ -218,6 +218,7 @@ void rm(noeud* courant, char* chemin, noeud* origin){
                 }
                 while (tmp->suiv != liste) tmp = tmp->suiv;
                 tmp->suiv = liste->suiv;
+                free(liste);
                 return;
             }
             liste = liste->suiv;

@@ -7,7 +7,8 @@
 #include "noeud.h"
 
 void freeFils(noeud *courant){
-    if (courant->fils == NULL) return;
+    if (courant == NULL) return;
+
     liste_noeud* l = courant->fils;
     while (l != NULL){
         liste_noeud* tmp = l;
