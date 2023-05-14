@@ -100,9 +100,12 @@ int main(int argc, char *argv[]){
                 erreur = true;
                 break;
             }else{
-                puts("ARBRE :\n");
-                print(courant, "");
+                puts("ARBRE :");
+                print(courant->racine, "");
             }
+        }
+        else if (strcmp(commande, "ls") == 0){
+            ls(courant);
         }
         else if (strcmp(commande, "mv") == 0){
             mv(courant, arg1, arg2);
@@ -110,7 +113,7 @@ int main(int argc, char *argv[]){
         else if (strcmp(commande, "cp") == 0){
             cp(courant, arg1, arg2);
         }
-        else{
+        else if (strcmp(commande, "") != 0) {
             printf("%s : commande inconnue\n", commande);
         }
 
@@ -122,7 +125,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Erreur lors de la fermeture du fichier.\n");
         return EXIT_FAILURE;
     }
-    freeFils(courant);
+    freeFils(courant->racine);  
     free(commande);
     free(line);
     free(arg1);

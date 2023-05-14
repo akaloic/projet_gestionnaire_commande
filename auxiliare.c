@@ -23,22 +23,33 @@ char *concat(char *s1, char *s2) {
     return result;
 }
 
-//cette fonction donne le nom a la fin du chemin 
+// Cette fonction donne le nom à la fin du chemin 
 char* getLastName(char* chemin) {
     char* nom = strrchr(chemin, '/');
+    if (nom == NULL){
+        return chemin;
+    }
     nom = (nom == NULL) ? chemin : nom+1;
-    return nom;
+    char* newNom = malloc(sizeof(char) * (strlen(nom) + 1));
+    assert(newNom != NULL);
+    strcpy(newNom, nom);
+    if (newNom != NULL){
+        newNom[strlen(nom)]= '\0';
+        return newNom;
+    }else{
+        return NULL;
+    }
 }
 
-//enleve le dernier nom
+// Enlever le dernier nom
 char* withoutLastName(char* chemin) {
-    char *x = strrchr(chemin, '/');
-    if (x == NULL) return chemin;
-
-    char *sansDernier = malloc(sizeof(char)*(strlen(chemin)+1));
+    char* x = strrchr(chemin, '/');
+    if (x == NULL) {
+        return NULL;
+    }
+    char* sansDernier = malloc(sizeof(char) * (strlen(chemin) - strlen(x) + 1));
     assert(sansDernier != NULL);
-    sansDernier[strlen(chemin)-strlen(x)] = '\0';
-    strncpy(sansDernier, chemin, strlen(chemin)-strlen(x));
-
+    strncpy(sansDernier, chemin, strlen(chemin) - strlen(x));
+    sansDernier[strlen(chemin) - strlen(x)] = '\0';
     return sansDernier;
 }

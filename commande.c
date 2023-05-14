@@ -52,7 +52,6 @@ void ls(noeud *courant){
         printf("%s\n", l->noeud->nom);
         l = l->suiv;
     }
-
     free(l);
 }
 
@@ -183,7 +182,7 @@ noeud* cd(noeud* courant, char* chemin){
         }
         liste = liste->suiv;
     }
-
+    free(premier_mot);
     return NULL;
 }
 
@@ -232,20 +231,22 @@ void rm(noeud* courant, char* chemin, noeud* origin){
         return;
     }
 
-    int len = strlen(chemin) - (strlen(reste)+1); 
-    char* premier_mot = malloc(sizeof(char)*len);
+    int len = strlen(chemin) - (strlen(reste)+1);
+    char* premier_mot = malloc(sizeof(char)*(len+1));
     assert(premier_mot != NULL);
     memmove(premier_mot, chemin, sizeof(char)*len);
-
+    premier_mot[len] = '\0';
     while(liste != NULL){
         if (strcmp(liste->noeud->nom, premier_mot) == 0){
             rm(liste->noeud, reste, origin);
+            free(premier_mot);
             return;
         }
         liste = liste->suiv;
     }
 
     printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", premier_mot);
+    free(premier_mot);
     return;
 }
 
@@ -257,12 +258,17 @@ void cp(noeud* courant, char* chem1, char* chem2) {
     noeud *depart = cd(courant, chem1);
 
     if(depart == NULL){
-        printf("Erreur, destination indiqué par chemin1 est éroné.%s", chem1);
+        printf("Erreur, la destination indiqué par %s est éroné.", chem1);
         return;
     }
 
     char *noLast = withoutLastName(chem2);
     char *last = getLastName(chem2);
+
+    if (noLast == NULL || last == NULL){
+        printf("Erreur, chemin2 est éroné %s",chem2);
+        return;
+    } 
     
     noeud *copie = copier_noeud(depart);
     for (int i = 0; i < strlen(last); i++) copie->nom[i] = last[i];
@@ -272,36 +278,27 @@ void cp(noeud* courant, char* chem1, char* chem2) {
         copie->pere = courant;
         if (!appartient_sous_arbre(courant, courant->fils)){
             ajout_noeud_a_liste(copie, &courant->fils);
-            return;
         }else{  
             puts("Il a apparait deja dans le noeud courant");
-            return;
+        }
+    }else{
+        copie->pere = courant;
+        noeud *arrive = cd(courant, noLast);
+
+        if (arrive == NULL){
+            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
+        }else if (!arrive->est_dossier){
+            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un fichier.");
+        }else if (estParent(depart, arrive)){
+            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
+        }else if (appartient_sous_arbre(copie, arrive->fils)){
+            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
+        }else{
+            ajout_noeud_a_liste(copie, &arrive->fils);
         }
     }
-
-    copie->pere = courant;
-    noeud *arrive = cd(courant, noLast);
-
-    if (arrive == NULL){
-        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
-        return;
-    }
-    if (!arrive->est_dossier){
-        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un fichier.");
-        return;
-    }
-    if (estParent(depart, arrive)){
-        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
-        return;
-    }
-    if (appartient_sous_arbre(copie, arrive->fils)){
-        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
-        return;
-    }
-
-    ajout_noeud_a_liste(copie, &arrive->fils);
-
-    free(noLast);   
+    free(noLast);
+    free(last);
 }
 
 void mv(noeud *courant, char *chemin1, char *chemin2) {
@@ -358,5 +355,6 @@ void mv(noeud *courant, char *chemin1, char *chemin2) {
     ajout_noeud_a_liste(depart, &arrive->fils);
 
     free(noLast);
+    free(last);
 }
 
