@@ -24,6 +24,9 @@ extern void ajouter_fils(noeud *pere, noeud *fils);
 extern noeud* copier_noeud(noeud *n);
 extern void ajout_noeud_a_liste(noeud *, liste_noeud **);
 extern bool estParent(noeud *, noeud *);
+<<<<<<< HEAD
 extern void freeListeNoeud(liste_noeud *);
+=======
+>>>>>>> develop
 
 #endif

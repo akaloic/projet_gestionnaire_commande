@@ -253,7 +253,10 @@ void rm(noeud* courant, char* chemin, noeud* origin){
 
 
 void cp(noeud* courant, char* chem1, char* chem2) {
+<<<<<<< HEAD
     assert(courant != NULL);
+=======
+>>>>>>> develop
 
     noeud *depart = cd(courant, chem1);
 

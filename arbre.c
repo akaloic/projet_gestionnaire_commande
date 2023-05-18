@@ -110,8 +110,11 @@ int main(int argc, char *argv[]){
         else if (strcmp(commande, "cp") == 0){
             cp(courant, arg1, arg2);
         }
+        else if(strcmp(commande, "ls")){
+            ls(courant);
+        }
         else{
-            printf("%s : commande inconnue\n", commande);
+            printf("%s : commande kinconnue\n", commande);
         }
 
         if (erreur) break;
@@ -122,11 +125,39 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Erreur lors de la fermeture du fichier.\n");
         return EXIT_FAILURE;
     }
+<<<<<<< HEAD
     freeFils(courant);
+=======
+
+    free(courant);
+>>>>>>> develop
     free(commande);
     free(line);
     free(arg1);
     free(arg2);
+<<<<<<< HEAD
+=======
+    
+    
+    /*
+    // CELA CREER ARBRE DE FIGURE 1
+    mkdir(courant, "Cours");
+    courant = cd(courant, "Cours");
+    mkdir(courant, "ProjetC");
+    mkdir(courant, "Anglais");
+    courant = cd(courant, "");
+    touch(courant, "Edt");
+    cp(courant, "Cours", "/Td");
+    pwd(courant);
+    rm(courant, "/Td/ProjetC");
+    rm(courant, "/Td/Anglais");
+    courant = cd(courant, "Td");
+    mkdir(courant, "td1");
+    mkdir(courant, "td2");
+    print(courant);
+    // CELA CREER ARBRE DE FIGURE 1
+    */
+>>>>>>> develop
 
     return EXIT_SUCCESS;    
 }
