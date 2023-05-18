@@ -120,26 +120,26 @@ void print(noeud* courant, char tab[]){   // on commence avec la racine
 
     int nb = nbFils(courant->fils);
     if (nb == 0) {
-        printf("%sNoeud : '%s' (%s), %d fils\n", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+        printf("%sNoeud : '%s' (%s), 0 fils\n", tab, courant->nom, (courant->est_dossier) ? "D" : "F");
         return;
     }
-    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, (courant->est_dossier) ? "D" : "F", nb);
 
-    if (courant->fils != NULL){
-        liste_noeud* l = courant->fils;
-        while (l != NULL){
-            printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-            l = l->suiv;
-        }
-        printf("\n");
-        l = courant->fils;
-        char tab2[1000] = "";
-        strcat(tab2, tab);
-        strcat(tab2, "|     ");
-        while (l != NULL){
-            print(l->noeud, tab2);
-            l = l->suiv;
-        }
+    liste_noeud* l = courant->fils;
+    while (l != NULL){
+        printf(" %s (%s),", l->noeud->nom, (l->noeud->est_dossier) ? "D" : "F");
+        l = l->suiv;
+    }
+    printf("\n");
+
+    l = courant->fils;
+    char tab2[1000] = "";       // --> On suppose qu'on a pas plus de 1000 fils
+    strcat(tab2, tab);
+    strcat(tab2, "|     ");
+
+    while (l != NULL){
+        print(l->noeud, tab2);
+        l = l->suiv;
     }
 }
 
