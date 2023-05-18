@@ -89,29 +89,30 @@ void touch(noeud* courant, char* nom){
 void print(noeud* courant, char tab[]){   // on commence avec la racine
     if (courant == NULL) return;
 
-    int nb = nbFils(courant->fils);
-    if (nb == 0) {
-        printf("%sNoeud : '%s' (%s), %d fils\n", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+    if (courant->fils == NULL){
+        printf("%sNoeud : '%s' (%s), %d fils\n", tab, courant->nom, courant->est_dossier ? "D" : "F", nbFils(courant->fils));
         return;
     }
-    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", nb);
+    printf("%sNoeud : '%s' (%s), %d fils :", tab, courant->nom, courant->est_dossier ? "D" : "F", 0);
 
-    if (courant->fils != NULL){
-        liste_noeud* l = courant->fils;
-        while (l != NULL){
-            printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
-            l = l->suiv;
-        }
-        printf("\n");
-        l = courant->fils;
-        char tab2[100] = "";
-        strcat(tab2, tab);
-        strcat(tab2, "|     ");
-        while (l != NULL){
-            print(l->noeud, tab2);
-            l = l->suiv;
-        }
+    liste_noeud* l = courant->fils;
+    while (l != NULL){
+        printf(" %s (%s),", l->noeud->nom, l->noeud->est_dossier ? "D" : "F");
+        l = l->suiv;
     }
+    printf("\n");
+
+    l = courant->fils;
+    int nvLen = strlen(tab)+strlen("|     ")+1;
+    char *tab2 = malloc(nvLen);
+    strcpy(tab2, tab);
+    strcat(tab2, "|     ");
+    tab2[nvLen] = '\0';
+    while (l != NULL){
+        print(l->noeud, tab2);
+        l = l->suiv;
+    }
+    free(tab2);
 }
 
 void pwd(noeud* courant){
