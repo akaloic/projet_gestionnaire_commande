@@ -45,7 +45,6 @@ void ls(noeud *courant){
         printf("'%s' n'est pas un dossier.\n", courant->nom);
         return;
     }
-
     liste_noeud *l = courant->fils;
 
     while(l != NULL){
@@ -131,7 +130,7 @@ void pwd(noeud* courant){
     }
     printf("/");
     for (int i = n-1; i >= 0; i--){
-        printf("%s/", pwd[i]);
+        printf("%s", pwd[i]);
     }
     printf("\n");
     free(pwd);

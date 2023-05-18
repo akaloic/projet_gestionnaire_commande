@@ -5,6 +5,7 @@ cd Rep11
 mkdir Rep111
 cd Rep111
 touch file1111
+ls
 cd
 mkdir Rep2
 cd Rep2
