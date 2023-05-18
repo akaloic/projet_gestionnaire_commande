@@ -49,9 +49,10 @@ void ls(noeud *courant){
     liste_noeud *l = courant->fils;
 
     while(l != NULL){
-        printf("%s\n", l->noeud->nom);
+        printf("%s ", l->noeud->nom);
         l = l->suiv;
     }
+    printf("\n");
     free(l);
 }
 
@@ -258,7 +259,7 @@ void cp(noeud* courant, char* chem1, char* chem2) {
     noeud *depart = cd(courant, chem1);
 
     if(depart == NULL){
-        printf("Erreur, la destination indiqué par %s est éroné.", chem1);
+        printf("Erreur, la destination indiqué par %s *est éroné.", chem1);
         return;
     }
 
