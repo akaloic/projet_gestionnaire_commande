@@ -65,8 +65,11 @@ int main(int argc, char *argv[]){
         else if (strcmp(commande, "cp") == 0){
             cp(courant, arg1, arg2);
         }
+        else if(strcmp(commande, "ls")){
+            ls(courant);
+        }
         else{
-            printf("%s : commande inconnue\n", commande);
+            printf("%s : commande kinconnue\n", commande);
         }
     }
 
