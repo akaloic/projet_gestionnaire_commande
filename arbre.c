@@ -9,6 +9,7 @@
 #include "commande.h"
 
 #define MAX_PATH 100
+#define MAX_LINE 200
 
 int main(int argc, char *argv[]){
     noeud *courant = malloc(sizeof(noeud));
@@ -26,18 +27,18 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
 
-    char *line = malloc(sizeof(char) * 10000);
+    char *line = malloc(sizeof(char) * MAX_LINE);
     assert(line != NULL);
-    char *commande = malloc(sizeof(char) * 10000);
+    char *commande = malloc(sizeof(char) * MAX_PATH);
     assert(commande != NULL);
-    char *arg1 = malloc(sizeof(char) * 10000);
+    char *arg1 = malloc(sizeof(char) * MAX_PATH);
     assert(arg1 != NULL);
-    char *arg2 = malloc(sizeof(char) * 10000);
+    char *arg2 = malloc(sizeof(char) * MAX_PATH);
     assert(arg2 != NULL);
 
     bool erreur = false;
 
-    while (fgets(line, 10000, file) != NULL){
+    while (fgets(line, MAX_LINE, file) != NULL){
 
         *commande = '\0';
         *arg1 = '\0';
@@ -100,11 +101,16 @@ int main(int argc, char *argv[]){
                 erreur = true;
                 break;
             }else{
-                puts("ARBRE :");
+                puts("\nARBRE :");
                 print(courant->racine, "");
             }
         }
         else if (strcmp(commande, "ls") == 0){
+            if ((*arg2) != '\0' || (*arg1) != '\0'){
+                fprintf(stderr, "cd : trop d'arguments\n");
+                erreur = true;
+                break;
+            }
             ls(courant);
         }
         else if (strcmp(commande, "mv") == 0){

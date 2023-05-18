@@ -7,6 +7,14 @@
 #include "auxiliare.h"
 #include "commande.h"
 
+/**
+ * @brief Crée un dossier.
+ *
+ * Cette fonction prend le noeud et un char[] en entrée et crée un dossier.
+ *
+ * @param courant Le noeud courant.
+ * @param nom Le nom du dossier.
+ */
 void mkdir(noeud *courant, char* nom){
     if (strlen(nom) >= 100){
         printf("Le nom du dossier est trop long.\n");
@@ -39,7 +47,13 @@ void mkdir(noeud *courant, char* nom){
     }
 }
 
-
+/**
+ * @brief Affiche les fichiers et dossiers.
+ *
+ * Cette fonction prend le noeud en entrée et affiche les fichiers et dossiers.
+ *
+ * @param courant Le noeud courant.
+ */
 void ls(noeud *courant){
     if (!courant->est_dossier) {
         printf("'%s' n'est pas un dossier.\n", courant->nom);
@@ -55,6 +69,14 @@ void ls(noeud *courant){
     free(l);
 }
 
+/**
+ * @brief Crée un fichier.
+ *
+ * Cette fonction prend le noeud et un char[] en entrée et crée un fichier.
+ *
+ * @param courant Le noeud courant.
+ * @param nom Le nom du fichier.
+ */
 void touch(noeud* courant, char* nom){
     assert(courant->est_dossier);
 
@@ -85,6 +107,14 @@ void touch(noeud* courant, char* nom){
 
 }
 
+/**
+ * @brief Imprime l'arborescence.
+ *
+ * Cette fonction prend le noeud et un char[] en entrée et imprime l'arbre.
+ *
+ * @param courant Le noeud courant.
+ * @param tab Le tableau de char[] représenté par "|      ".
+ */
 void print(noeud* courant, char tab[]){   // on commence avec la racine
     if (courant == NULL) return;
 
@@ -103,7 +133,7 @@ void print(noeud* courant, char tab[]){   // on commence avec la racine
         }
         printf("\n");
         l = courant->fils;
-        char tab2[100] = "";
+        char tab2[1000] = "";
         strcat(tab2, tab);
         strcat(tab2, "|     ");
         while (l != NULL){
@@ -113,6 +143,13 @@ void print(noeud* courant, char tab[]){   // on commence avec la racine
     }
 }
 
+/**
+ * @brief Affiche le chemin du noeud courant.
+ *
+ * Cette fonction prend le noeud en entrée et affiche le chemin du noeud courant.
+ *
+ * @param courant Le noeud courant.
+ */
 void pwd(noeud* courant){
     assert(courant != NULL);
     noeud* d = courant;
@@ -136,6 +173,15 @@ void pwd(noeud* courant){
     free(pwd);
 }
 
+/**
+ * @brief Change le noeud courant.
+ *
+ * Cette fonction prend le noeud et un char * en entrée et change le noeud courant.
+ *
+ * @param courant Le noeud courant.
+ * @param chemin Le chemin de la destination de noeud courant.
+ * @return Le nouvel emplacement de noeud courant.
+ */
 noeud* cd(noeud* courant, char* chemin){
     assert(courant != NULL);
     assert(courant->est_dossier);
@@ -186,6 +232,15 @@ noeud* cd(noeud* courant, char* chemin){
     return NULL;
 }
 
+/**
+ * @brief Supprime un noeud.
+ *
+ * Cette fonction prend le noeud, un char * et le noeud courant en entrée et supprime un noeud.
+ *
+ * @param courant Le noeud courant.
+ * @param chemin Le chemin du noeud à supprimer.
+ * @param origin Le noeud courant.
+ */
 void rm(noeud* courant, char* chemin, noeud* origin){
     assert(courant != NULL);
 
@@ -193,10 +248,19 @@ void rm(noeud* courant, char* chemin, noeud* origin){
         printf("Erreur, il faut passer un chemin non vide en parametre.\n");
         return;
     }
-    if (chemin[0] == '/') {rm(courant->racine, chemin+1, origin); return;}
+    if (chemin[0] == '/') {
+        rm(courant->racine, chemin+1, origin); 
+        return;
+    }
     if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {rm(courant->pere, chemin+3, origin); return;}
-        if (chemin[1] == '/') {rm(courant, chemin+2, origin); return;}
+        if (chemin[1] == '.' && chemin[2] == '/') {
+            rm(courant->pere, chemin+3, origin); 
+            return;
+        }
+        if (chemin[1] == '/') {
+            rm(courant, chemin+2, origin); 
+            return;
+        }
     }
 
     char* reste = strchr(chemin, '/');
@@ -250,57 +314,79 @@ void rm(noeud* courant, char* chemin, noeud* origin){
     return;
 }
 
-
-
+/**
+ * @brief Copie un noeud.
+ *
+ * Cette fonction prend le noeud, deux char * et le noeud courant en entrée et copie un noeud.
+ *
+ * @param courant Le noeud courant.
+ * @param chem1 Le chemin du noeud à copier.
+ * @param chem2 Le chemin de la destination du noeud copié.
+ */
 void cp(noeud* courant, char* chem1, char* chem2) {
     assert(courant != NULL);
 
     noeud *depart = cd(courant, chem1);
 
     if(depart == NULL){
-        printf("Erreur, la destination indiqué par %s *est éroné.", chem1);
+        printf("Erreur, destination indiqué par chemin1 (%s) est éroné.", chem1);
         return;
     }
 
     char *noLast = withoutLastName(chem2);
     char *last = getLastName(chem2);
-
-    if (noLast == NULL || last == NULL){
-        printf("Erreur, chemin2 est éroné %s",chem2);
-        return;
-    } 
     
     noeud *copie = copier_noeud(depart);
-    for (int i = 0; i < strlen(last); i++) copie->nom[i] = last[i];
+    strncpy(copie->nom, last, sizeof(char) * strlen(last));
     copie->nom[strlen(last)] = '\0';
 
     if (strchr(chem2, '/') == NULL){
         copie->pere = courant;
-        if (!appartient_sous_arbre(courant, courant->fils)){
+        if (!appartient_sous_arbre(courant, courant->fils) && !estParent(depart, courant)){
             ajout_noeud_a_liste(copie, &courant->fils);
-        }else{  
-            puts("Il a apparait deja dans le noeud courant");
-        }
-    }else{
-        copie->pere = courant;
-        noeud *arrive = cd(courant, noLast);
-
-        if (arrive == NULL){
-            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
-        }else if (!arrive->est_dossier){
-            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un fichier.");
-        }else if (estParent(depart, arrive)){
-            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
-        }else if (appartient_sous_arbre(copie, arrive->fils)){
-            printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin1 est un parent du chemin2.");
         }else{
-            ajout_noeud_a_liste(copie, &arrive->fils);
+            fprintf(stderr, "Erreur, le noeud courant est un parent du noeud à copier.\n");
         }
+        // free(noLast);
+        // free(last);
+        return;
     }
+
+    copie->pere = courant;
+    noeud *arrive = cd(courant, noLast);
+
+    if (arrive == NULL){
+        printf("Erreur, l'endroit où on souhaite copier le premier element indiqué par le chemin2 est un chemin menant nul part.");
+        return;
+    }
+    if (!arrive->est_dossier){
+        printf("Erreur, l'endroit où on souhaite copier le premier élément indiqué par le chemin1 est un fichier.");
+        return;
+    }
+    if (estParent(depart, arrive)){
+        printf("Erreur, l'endroit où on souhaite copier le premier élément indiqué par le chemin1 est un parent du chemin2.");
+        return;
+    }
+    if (appartient_sous_arbre(copie, arrive->fils)){
+        printf("Erreur, l'endroit où on souhaite copier le premier élément indiqué par le chemin1 est un parent du chemin2.");
+        return;
+    }
+
+    ajout_noeud_a_liste(copie, &arrive->fils);
+
     free(noLast);
     free(last);
 }
 
+/**
+ * @brief Déplace un noeud.
+ *
+ * Cette fonction prend le noeud, deux char * et le noeud courant en entrée et déplace un noeud.
+ *
+ * @param courant Le noeud courant.
+ * @param chemin1 Le chemin du noeud à déplacer.
+ * @param chemin2 Le chemin de la destination du noeud déplacé.
+ */
 void mv(noeud *courant, char *chemin1, char *chemin2) {
     noeud *depart = cd(courant, chemin1);
     if (depart ==NULL) {
@@ -312,12 +398,12 @@ void mv(noeud *courant, char *chemin1, char *chemin2) {
     char *last = getLastName(chemin2);
 
     if (strchr(chemin2, '/') == NULL){
-        memcpy(depart->nom, last, sizeof(char) * strlen(last));
+        strncpy(depart->nom, last, sizeof(char) * strlen(last));
         depart->nom[strlen(last)] = '\0';
         return;
     }
 
-    noeud *arrive= cd(courant,noLast);
+    noeud *arrive= cd(courant, noLast);
 
     if (arrive == NULL) {
         printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin2 est un chemin menant nulle part.");
@@ -349,7 +435,7 @@ void mv(noeud *courant, char *chemin1, char *chemin2) {
         }
     }
 
-    memcpy(depart->nom, last, sizeof(char) * strlen(last));
+    strncpy(depart->nom, last, sizeof(char) * strlen(last));
     depart->nom[strlen(last)] = '\0';
     depart->pere = arrive;
     ajout_noeud_a_liste(depart, &arrive->fils);
