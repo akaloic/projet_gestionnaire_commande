@@ -16,7 +16,7 @@ struct liste_noeud{
 };
 typedef struct liste_noeud liste_noeud;
 
-extern void freeFils(noeud *);
+extern void freeNoeud(noeud *);
 extern noeud* trouve_fils(noeud*, char*);
 extern int nbFils(liste_noeud *);
 extern bool appartient_sous_arbre(noeud* noeud, liste_noeud* arbre);
@@ -24,5 +24,6 @@ extern void ajouter_fils(noeud *pere, noeud *fils);
 extern noeud* copier_noeud(noeud *n);
 extern void ajout_noeud_a_liste(noeud *, liste_noeud **);
 extern bool estParent(noeud *, noeud *);
+extern noeud *destination(noeud *, char *);
 
 #endif

@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
                 erreur = true;
                 break;
             }else{
-                rm(courant, arg1, courant);
+                rm(courant, arg1);
             }
         }
         else if (strcmp(commande, "print") == 0){
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Erreur lors de la fermeture du fichier.\n");
         return EXIT_FAILURE;
     }
-    freeFils(courant->racine);  
+    freeNoeud(courant->racine);  
     free(commande);
     free(line);
     free(arg1);

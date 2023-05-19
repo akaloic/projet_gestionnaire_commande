@@ -9,20 +9,70 @@
 /**
  * @brief Free un noeud et ses fils
  * 
+ * Parcours la liste des fils du noeud et libère la mémoire de chaque fils
+ * 
+ * 
  * @param n noeud dont on veut libérer les fils
  */
-void freeFils(noeud *n){
+void freeNoeud(noeud *n){
     if (n == NULL) return;
-    if (n->fils != NULL) {
-        liste_noeud *tmp = n->fils;
-        while (tmp != NULL) {
-            liste_noeud *suiv = tmp->suiv;
-            freeFils(tmp->noeud);
-            free(tmp);
-            tmp = suiv;
+    if (n->est_dossier) {
+        if (n->fils != NULL) {
+            liste_noeud *tmp = n->fils;
+            while (tmp != NULL) {
+                liste_noeud *suiv = tmp->suiv;
+                freeNoeud(tmp->noeud);
+                free(tmp);
+                tmp = suiv;
+            }
         }
     }
     free(n);
+}
+
+noeud *destination(noeud *courant, char *chemin){
+    assert(courant != NULL);
+
+    if (chemin[0] == '\0') return courant->racine;
+    if (chemin[0] == '/') return destination(courant->racine, chemin+1);
+    if (chemin[0] == '.'){
+        if (chemin[1] == '.'){
+            if (chemin[2] == '\0') return courant->pere;
+            if (chemin[2] == '/') return destination(courant->pere, chemin+3);
+        }
+        if (chemin[1] == '/') 
+            return destination(courant, chemin+2);
+    }
+
+    char* reste = strchr(chemin, '/');
+    reste = (reste == NULL) ? NULL : reste+1;
+    liste_noeud* liste = courant->fils;
+
+    if (reste == NULL){
+        while (liste != NULL){
+            if (strcmp(liste->noeud->nom, chemin) == 0){
+                return liste->noeud;
+            }
+            liste = liste->suiv;
+        }
+        return NULL;
+    }
+
+    int len = strlen(chemin) - (strlen(reste)+1); 
+    char* premier_mot = malloc(sizeof(char) * (len + 1));
+    assert(premier_mot != NULL);
+    memmove(premier_mot, chemin, sizeof(char) * len);
+    premier_mot[len] = '\0';
+
+    while(liste != NULL){
+        if (strcmp(liste->noeud->nom, premier_mot) == 0){
+            free(premier_mot);
+            return destination(liste->noeud, reste);
+        }
+        liste = liste->suiv;
+    }
+    free(premier_mot);
+    return NULL;
 }
 
 
@@ -91,7 +141,7 @@ bool appartient_sous_arbre(noeud* noeud, liste_noeud* arbre) {
 /**
  * @brief Vérifie si un noeud est le parent d'un autre noeud
  * 
- * parcours tous les pères de x, et vérifie si le noeud parent est le noeud passé en paramètre (parent)
+ * Parcours tous les pères de x, et vérifie si le noeud parent est le noeud passé en paramètre (parent)
  * 
  * @param parent noeud sur lequel on veut vérifier si il est le parent du noeud x
  * @param x noeud x, à vérifier si il est le fils du noeud parent

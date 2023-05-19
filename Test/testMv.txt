@@ -1,0 +1,13 @@
+mkdir a
+mkdir b
+mkdir c
+cd a
+touch aTxt
+mkdir d
+mkdir e
+mkdir f
+cd d
+touch dTxt
+print 
+mv dTxt /c/LOLO
+print

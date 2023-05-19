@@ -133,7 +133,7 @@ void print(noeud* courant, char tab[]){   // on commence avec la racine
     printf("\n");
 
     l = courant->fils;
-    char tab2[1000] = "";       // --> On suppose qu'on a pas plus de 1000 fils
+    char tab2[1000] = "";       // --> On suppose qu'on a pas plus de 1000 hauteurs
     strcat(tab2, tab);
     strcat(tab2, "|     ");
 
@@ -165,9 +165,9 @@ void pwd(noeud* courant){
         pwd[i] = d->nom;
         d = d->pere;
     }
-    printf("/");
+    
     for (int i = n-1; i >= 0; i--){
-        printf("%s", pwd[i]);
+        printf("/%s", pwd[i]);
     }
     printf("\n");
     free(pwd);
@@ -186,131 +186,62 @@ noeud* cd(noeud* courant, char* chemin){
     assert(courant != NULL);
     assert(courant->est_dossier);
 
-    if (chemin[0] == '\0') return courant->racine;
-    if (chemin[0] == '/') return cd(courant->racine, chemin+1);
-    if (chemin[0] == '.'){
-        if (chemin[1] == '.'){
-            if (chemin[2] == '\0') return courant->pere;
-            if (chemin[2] == '/') return cd(courant->pere, chemin+3);
-        }
-        if (chemin[1] == '/') 
-            return cd(courant, chemin+2);
-    }
-
-    char* reste = strchr(chemin, '/');
-    reste = (reste == NULL) ? NULL : reste+1;
-    liste_noeud* liste = courant->fils;
-
-    if (reste == NULL){
-        while (liste != NULL){
-            if (strcmp(liste->noeud->nom, chemin) == 0){
-                if (liste->noeud->est_dossier) return liste->noeud;
-                else {
-                    printf("'%s' n'est pas un dossier. Le dossier courant reste à la même place.\n", liste->noeud->nom);
-                    return NULL;
-                }
-            }
-            liste = liste->suiv;
-        }
+    noeud *arrive = destination(courant, chemin);
+    if (arrive == NULL) {
+        printf("Erreur, le chemin indiqué est éroné.\n");
         return NULL;
     }
-
-    int len = strlen(chemin) - (strlen(reste)+1); 
-    char* premier_mot = malloc(sizeof(char) * (len + 1));
-    assert(premier_mot != NULL);
-    memmove(premier_mot, chemin, sizeof(char) * len);
-    premier_mot[len] = '\0';
-
-    while(liste != NULL){
-        if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            free(premier_mot);
-            return cd(liste->noeud, reste);
-        }
-        liste = liste->suiv;
+    if (!arrive->est_dossier) {
+        printf("Erreur, le chemin indiqué est un fichier.\n");
+        return NULL;
     }
-    free(premier_mot);
-    return NULL;
+    return arrive;
 }
 
 /**
  * @brief Supprime un noeud.
  *
  * Cette fonction prend le noeud, un char * et le noeud courant en entrée et supprime un noeud.
+ * Si le noeud est un dossier, on supprime tous les fils de ce dossier.
+ * Si le noeud est un fichier, on supprime le fichier.
+ * Si le noeud est un parent du noeud courant, on ne peut pas le supprimer.
+ * Si le noeud n'existe pas, on ne peut pas le supprimer.
  *
  * @param courant Le noeud courant.
  * @param chemin Le chemin du noeud à supprimer.
  * @param origin Le noeud courant.
  */
-void rm(noeud* courant, char* chemin, noeud* origin){
-    assert(courant != NULL);
+void rm(noeud* courant, char* chemin){
+    noeud *dest = destination(courant, chemin);
 
-    if (chemin[0] == '\0'){
-        printf("Erreur, il faut passer un chemin non vide en parametre.\n");
+    if (dest == NULL) {
+        printf("Erreur, le chemin indiqué est éroné.\n");
         return;
     }
-    if (chemin[0] == '/') {
-        rm(courant->racine, chemin+1, origin); 
-        return;
-    }
-    if (chemin[0] == '.'){
-        if (chemin[1] == '.' && chemin[2] == '/') {
-            rm(courant->pere, chemin+3, origin); 
-            return;
-        }
-        if (chemin[1] == '/') {
-            rm(courant, chemin+2, origin); 
-            return;
-        }
-    }
-
-    char* reste = strchr(chemin, '/');
-    reste = (reste == NULL) ? NULL : reste+1;
-    liste_noeud* liste = courant->fils;
-
-    if (reste == NULL){  // il y a plus d'occurence de '/' dans chemin
-        while (liste != NULL){
-            if (strcmp(liste->noeud->nom, chemin) == 0){    // on a trouvé le noeud à supprimer  
-                while(origin != courant->racine){
-                    if (strcmp(origin->nom, liste->noeud->nom) == 0){
-                        printf("Le dossier '%s' ne peut pas être supprimé car elle est un parent de '%s'\n", liste->noeud->nom, origin->nom);
-                        return;
-                    }
-                    origin = origin->pere;
-                }
-                if (liste->noeud->est_dossier) freeFils(liste->noeud);
-                else free(liste->noeud); 
-                       
-                liste_noeud* tmp = courant->fils;
-                if (tmp == liste){
-                    courant->fils = liste->suiv;
-                    return;
-                }
-                while (tmp->suiv != liste) tmp = tmp->suiv;
-                tmp->suiv = liste->suiv;
-                return;
-            }
-            liste = liste->suiv;
-        }
-        printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", chemin);
+    if (estParent(dest, courant)) {
+        printf("Erreur, le chemin indiqué est un parent du noeud courant.\n");
         return;
     }
 
-    int len = strlen(chemin) - (strlen(reste)+1);
-    char* premier_mot = malloc(sizeof(char)*(len+1));
-    assert(premier_mot != NULL);
-    memmove(premier_mot, chemin, sizeof(char)*len);
-    premier_mot[len] = '\0';
-    while(liste != NULL){
-        if (strcmp(liste->noeud->nom, premier_mot) == 0){
-            rm(liste->noeud, reste, origin);
-            free(premier_mot);
-            return;
-        }
+    liste_noeud *liste = dest->pere->fils;
+
+    if (strcmp(liste->noeud->nom, dest->nom) == 0) {
+        dest->pere->fils = liste->suiv;
+        freeNoeud(liste->noeud);
+        free(liste);    
+        return;
+    }
+    while (liste->suiv != NULL && strcmp(liste->suiv->noeud->nom, dest->nom) != 0) {
         liste = liste->suiv;
     }
-
-    printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", premier_mot);
-    free(premier_mot);
+    if (liste->suiv != NULL) {
+        liste_noeud *tmp = liste->suiv;
+        liste->suiv = tmp->suiv;
+        freeNoeud(tmp->noeud);
+        free(tmp);
+        return;
+    }
+    printf("'%s' n'existe pas dans le dossier. Il ne peut pas être supprimé.\n", chemin);
     return;
 }
 
@@ -326,7 +257,7 @@ void rm(noeud* courant, char* chemin, noeud* origin){
 void cp(noeud* courant, char* chem1, char* chem2) {
     assert(courant != NULL);
 
-    noeud *depart = cd(courant, chem1);
+    noeud *depart = destination(courant, chem1);
 
     if(depart == NULL){
         printf("Erreur, destination indiqué par chemin1 (%s) est éroné.", chem1);
@@ -388,9 +319,10 @@ void cp(noeud* courant, char* chem1, char* chem2) {
  * @param chemin2 Le chemin de la destination du noeud déplacé.
  */
 void mv(noeud *courant, char *chemin1, char *chemin2) {
-    noeud *depart = cd(courant, chemin1);
+    noeud *depart = destination(courant, chemin1);
+
     if (depart ==NULL) {
-        printf("Erreur, destination indiqué par chemin1 est éroné.%s", chemin1);
+        printf("Erreur, destination indiqué par chemin1 (%s) est éroné.", chemin1);
         return;
     }
 
@@ -398,45 +330,57 @@ void mv(noeud *courant, char *chemin1, char *chemin2) {
     char *last = getLastName(chemin2);
 
     if (strchr(chemin2, '/') == NULL){
-        strncpy(depart->nom, last, sizeof(char) * strlen(last));
-        depart->nom[strlen(last)] = '\0';
+        strncpy(depart->nom, last, sizeof(depart->nom) - 1);
+        depart->nom[sizeof(depart->nom) - 1] = '\0';
+        free(noLast);
+        free(last);
         return;
     }
 
     noeud *arrive= cd(courant, noLast);
 
     if (arrive == NULL) {
-        printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin2 est un chemin menant nulle part.");
+        printf("Erreur, l'endroit où l'on souhaite déplacer le premier élément indiqué par le chemin2 est un chemin menant nulle part.");
+        free(noLast);
+        free(last);
         return;
     }
     if (!arrive->est_dossier) {
         printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un fichier.");
+        free(noLast);
+        free(last);
         return;
     }
     if (estParent(depart, arrive)) {
         printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un parent du chemin2 .");
+        free(noLast);
+        free(last);
         return;
     }
     if (appartient_sous_arbre(depart, arrive->fils)) {
         printf("Erreur, l'endroit où on souhaite déplacer le premier élément indiqué par le chemin1 est un parent du chemin2.");
+        free(noLast);
+        free(last);
         return;
     }
 
     liste_noeud *liste = depart->pere->fils;
-    if (liste->noeud ==depart) {
+    if (liste->noeud == depart) {
         depart->pere->fils = liste->suiv;
+        free(liste);
     } else {
         while (liste != NULL && liste->suiv != NULL && liste->suiv->noeud != depart) {
             liste = liste->suiv;
         }
-        if (liste != NULL&& liste->suiv != NULL) {
+        if (liste != NULL && liste->suiv != NULL) {
             liste_noeud *tmp = liste->suiv;
             liste->suiv = tmp->suiv;
+            free(tmp);
         }
     }
 
-    strncpy(depart->nom, last, sizeof(char) * strlen(last));
-    depart->nom[strlen(last)] = '\0';
+    strncpy(depart->nom, last, sizeof(depart->nom) - 1);
+    depart->nom[sizeof(depart->nom) - 1] = '\0';
     depart->pere = arrive;
     ajout_noeud_a_liste(depart, &arrive->fils);
 
